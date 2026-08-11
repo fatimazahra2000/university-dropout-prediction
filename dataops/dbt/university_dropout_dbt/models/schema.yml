@@ -1,0 +1,45 @@
+version: 2
+
+models:
+  - name: stg_students
+    description: "Staging model contenant les données étudiantes nettoyées depuis la source DLT."
+
+    columns:
+      - name: gender
+        tests:
+          - not_null
+
+      - name: class
+        tests:
+          - not_null
+
+      - name: raisedhands
+        tests:
+          - not_null
+
+      - name: visitedresources
+        tests:
+          - not_null
+
+      - name: announcementsview
+        tests:
+          - not_null
+
+      - name: discussion
+        tests:
+          - not_null
+
+  - name: prepared_students
+    description: "Données préparées pour les étapes suivantes du projet de prédiction."
+
+    columns:
+      - name: absence_risk
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+
+      - name: risk_class
+        tests:
+          - not_null
