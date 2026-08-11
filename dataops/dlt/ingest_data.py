@@ -4,7 +4,7 @@ import pandas as pd
 def ingest_student_data():
     # 1. Charger le fichier CSV avec pandas
     # On précise le nom exact de ton fichier
-    file_path = "xAPI-Edu-Data.csv"
+    file_path = "data/raw/xAPI-Edu-Data.csv"
     df = pd.read_csv(file_path)
     
     # Nettoyage rapide des noms de colonnes (pour éviter les problèmes de SQL plus tard)

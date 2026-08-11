@@ -1,0 +1,19 @@
+select
+    gender,
+    nationality,
+    placeofbirth,
+    stageid,
+    gradeid,
+    sectionid,
+    topic,
+    semester,
+    relation,
+    raisedhands,
+    visitedresources,
+    announcementsview,
+    discussion,
+    parentansweringsurvey,
+    parentschoolsatisfaction,
+    studentabsencedays,
+    class
+from {{ source('raw_data', 'students_raw') }}
