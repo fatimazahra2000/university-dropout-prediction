@@ -71,7 +71,7 @@ desktop.ini
 # dbt
 # ==========================================
 
-dataops/dbt/logs/
+dataops/dbt/**/logs/
 dataops/dbt/**/target/
 dataops/dbt/**/dbt_packages/
 dataops/dbt/**/.user.yml
