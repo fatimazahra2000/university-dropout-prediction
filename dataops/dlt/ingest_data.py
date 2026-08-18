@@ -1,7 +1,7 @@
 import dlt
 import pandas as pd
 
-def ingest_student_data():
+def ingest_student_data(database_path="data/duckdb/university.duckdb"):
     # 1. Charger le fichier CSV avec pandas
     # On précise le nom exact de ton fichier
     file_path = "data/raw/xAPI-Edu-Data.csv"
@@ -14,10 +14,9 @@ def ingest_student_data():
     # Destination : duckdb | Nom de la base : 'student_data'
     pipeline = dlt.pipeline(
         pipeline_name="student_pipeline",
-        destination="duckdb",
+        destination=dlt.destinations.duckdb(database_path),
         dataset_name="raw_data"
     )
-
     # 3. Lancer l'ingestion vers la table 'students_raw'
     load_info = pipeline.run(
         df.to_dict(orient="records"), 
