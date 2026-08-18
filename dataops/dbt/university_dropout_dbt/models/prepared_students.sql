@@ -1,4 +1,4 @@
-select
+select distinct
     gender,
     nationality,
     placeofbirth,
@@ -20,5 +20,6 @@ select
         when studentabsencedays = 'Above-7' then 1
         else null
     end as absence_risk,
+    class,
     class as risk_class
 from {{ ref('stg_students') }}

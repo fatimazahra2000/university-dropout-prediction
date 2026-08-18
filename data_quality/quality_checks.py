@@ -1,8 +1,5 @@
-import duckdb
-import sys
+import pandas as pd
 
-DB_PATH = "student_pipeline.duckdb"
-TABLE = "raw_data.students_raw"
 
 REQUIRED_COLUMNS = [
     "gender",
@@ -24,6 +21,7 @@ REQUIRED_COLUMNS = [
     "class",
 ]
 
+
 ALLOWED_VALUES = {
     "gender": {"M", "F"},
     "stageid": {"lowerlevel", "MiddleSchool", "HighSchool"},
@@ -36,6 +34,7 @@ ALLOWED_VALUES = {
     "class": {"L", "M", "H"},
 }
 
+
 NUMERIC_RANGES = {
     "raisedhands": (0, 100),
     "visitedresources": (0, 100),
@@ -44,136 +43,97 @@ NUMERIC_RANGES = {
 }
 
 
-def check(condition, message):
-    if condition:
-        print(f"[PASS] {message}")
-        return True
-
-    print(f"[FAIL] {message}")
-    return False
-
-
-def main():
-    con = duckdb.connect(DB_PATH)
-    failures = 0
-
-    print("=" * 50)
-    print("       DATA QUALITY REPORT")
-    print("=" * 50)
+def run_quality_checks(df: pd.DataFrame) -> dict:
+    errors = []
 
     # 1. Dataset non vide
-    total_rows = con.execute(
-        f"SELECT COUNT(*) FROM {TABLE}"
-    ).fetchone()[0]
-
-    if not check(
-        total_rows > 0,
-        f"Dataset non vide ({total_rows} lignes)"
-    ):
-        failures += 1
+    if df.empty:
+        errors.append("Le dataset est vide.")
 
     # 2. Colonnes obligatoires
-    columns = {
-        row[0]
-        for row in con.execute(
-            f"DESCRIBE {TABLE}"
-        ).fetchall()
+    missing_columns = [
+        column
+        for column in REQUIRED_COLUMNS
+        if column not in df.columns
+    ]
+
+    if missing_columns:
+        errors.append(
+            f"Colonnes manquantes : {missing_columns}"
+        )
+
+    # Les contrôles suivants ne sont possibles
+    # que sur les colonnes réellement présentes.
+    available_required_columns = [
+        column
+        for column in REQUIRED_COLUMNS
+        if column in df.columns
+    ]
+
+    # 3. Valeurs nulles
+    null_counts = {
+        column: int(df[column].isna().sum())
+        for column in available_required_columns
     }
 
-    for column in REQUIRED_COLUMNS:
-        if not check(
-            column in columns,
-            f"Colonne présente : {column}"
-        ):
-            failures += 1
+    for column, count in null_counts.items():
+        if count > 0:
+            errors.append(
+                f"{column}: {count} valeur(s) NULL"
+            )
 
-    # 3. Unicité de _dlt_id
-    total_ids, distinct_ids = con.execute(
-        f"""
-        SELECT
-            COUNT(_dlt_id),
-            COUNT(DISTINCT _dlt_id)
-        FROM {TABLE}
-        """
-    ).fetchone()
-
-    if not check(
-        total_ids == distinct_ids,
-        "_dlt_id unique"
-    ):
-        failures += 1
-
-    # 4. Valeurs nulles
-    for column in REQUIRED_COLUMNS:
-        null_count = con.execute(
-            f"""
-            SELECT COUNT(*)
-            FROM {TABLE}
-            WHERE {column} IS NULL
-            """
-        ).fetchone()[0]
-
-        if not check(
-            null_count == 0,
-            f"{column}: aucune valeur NULL"
-        ):
-            failures += 1
-
-    # 5. Valeurs catégorielles
+    # 4. Valeurs catégorielles
     for column, allowed in ALLOWED_VALUES.items():
+        if column not in df.columns:
+            continue
 
-        values = {
-            row[0]
-            for row in con.execute(
-                f"""
-                SELECT DISTINCT {column}
-                FROM {TABLE}
-                """
-            ).fetchall()
-        }
-
+        values = set(df[column].dropna().unique())
         invalid = values - allowed
 
-        if not check(
-            not invalid,
-            f"{column}: valeurs valides"
-        ):
-            print(f"       Valeurs inattendues : {invalid}")
-            failures += 1
+        if invalid:
+            errors.append(
+                f"{column}: valeurs inattendues {sorted(invalid)}"
+            )
 
-    # 6. Plages numériques
+    # 5. Plages numériques
     for column, (minimum, maximum) in NUMERIC_RANGES.items():
+        if column not in df.columns:
+            continue
 
-        invalid_count = con.execute(
-            f"""
-            SELECT COUNT(*)
-            FROM {TABLE}
-            WHERE {column} < {minimum}
-               OR {column} > {maximum}
-            """
-        ).fetchone()[0]
+        invalid_count = int(
+            (
+                (df[column] < minimum)
+                | (df[column] > maximum)
+            ).sum()
+        )
 
-        if not check(
-            invalid_count == 0,
-            f"{column}: valeurs dans [{minimum}, {maximum}]"
-        ):
-            failures += 1
+        if invalid_count > 0:
+            errors.append(
+                f"{column}: {invalid_count} valeur(s) "
+                f"hors de [{minimum}, {maximum}]"
+            )
 
-    con.close()
+    # 6. Doublons
+    duplicates = int(df.duplicated().sum())
 
-    print("=" * 50)
+    if duplicates > 0:
+        errors.append(
+            f"{duplicates} ligne(s) dupliquée(s)"
+        )
 
-    if failures == 0:
-        print("RESULT: PASS")
-        print("Toutes les règles de qualité sont respectées.")
-        print("=" * 50)
-        sys.exit(0)
+    # 7. Complétude globale
+    if len(df.columns) > 0 and len(df) > 0:
+        total_cells = df.shape[0] * df.shape[1]
+        null_cells = int(df.isna().sum().sum())
+        completeness = 1 - (null_cells / total_cells)
+    else:
+        completeness = 0.0
 
-    print(f"RESULT: FAIL ({failures} contrôle(s) en échec)")
-    print("=" * 50)
-
-    sys.exit(1)
-
-
-if __name__ == "__main__":
-    main()
+    return {
+        "row_count": int(len(df)),
+        "column_count": int(len(df.columns)),
+        "completeness": round(completeness, 4),
+        "duplicates": duplicates,
+        "errors": errors,
+        "status": "PASS" if not errors else "FAIL",
+    }

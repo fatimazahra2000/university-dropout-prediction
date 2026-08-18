@@ -75,3 +75,12 @@ dataops/dbt/**/logs/
 dataops/dbt/**/target/
 dataops/dbt/**/dbt_packages/
 dataops/dbt/**/.user.yml
+# Dagster runtime
+dagster_home/
+.tmp_dagster_home_*/
+logs/
+
+# Dagster runtime
+dagster_home/
+.tmp_dagster_home_*/
+logs/
