@@ -10,6 +10,10 @@ dbt-duckdb
 # Data & ML
 pandas
 scikit-learn
+xgboost
+joblib
+matplotlib
+seaborn
 mlflow
 
 # API (Livrable 7)
