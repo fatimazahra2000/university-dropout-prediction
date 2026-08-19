@@ -735,6 +735,7 @@ entraînement des modèles ;
 comparaison des modèles ;
 sélection du meilleur modèle ;
 évaluation des performances.
+
 Fatima — Support ML / Scrum Master / Data Quality
 
 Contribution à la partie ML à travers :
