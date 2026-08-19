@@ -8,7 +8,6 @@ L'objectif est de construire un modèle de **classification des risques de décr
 
 Le module ML couvre l'ensemble du pipeline de Machine Learning, depuis la préparation des données jusqu'à la sauvegarde et au versionnement du meilleur modèle.
 
----
 
 ## 🎯 Objectifs
 
@@ -30,7 +29,6 @@ Le pipeline ML permet de :
 * Sauvegarder les noms des variables utilisées
 * Versionner les métadonnées du modèle
 
----
 
 ## 📊 Dataset
 
@@ -48,7 +46,6 @@ Les variables peuvent notamment représenter :
 
 La variable cible correspond au niveau de risque ou à la catégorie académique de l'étudiant selon la définition utilisée dans le projet.
 
----
 
 ## 🏗️ Architecture du module
 
@@ -76,7 +73,6 @@ ml/
 └── README.md
 ```
 
----
 
 ## 🔄 Pipeline Machine Learning
 
@@ -126,7 +122,6 @@ Sauvegarde du modèle
 Versionnement des métadonnées
 ```
 
----
 
 # 📁 Description des fichiers
 
@@ -173,7 +168,6 @@ X_val, X_test, y_val, y_test = train_test_split(
 )
 ```
 
----
 
 # 🔍 Analyse exploratoire des données — EDA
 
@@ -213,7 +207,6 @@ df.isnull().sum()
 df["target"].value_counts()
 ```
 
----
 
 # ✂️ Séparation des données
 
@@ -247,7 +240,6 @@ train_test_split(
 
 Le paramètre `stratify=y` permet de conserver une répartition similaire des classes dans les différents ensembles.
 
----
 
 # 🤖 Modèles entraînés
 
@@ -283,7 +275,6 @@ model.fit(X_train, y_train)
 
 L'objectif n'est pas simplement de choisir le modèle ayant la meilleure accuracy sur les données d'entraînement, mais de comparer les performances obtenues sur l'ensemble de validation.
 
----
 
 # 📈 Évaluation des modèles
 
@@ -354,7 +345,6 @@ print(
 )
 ```
 
----
 
 # 🏆 Sélection du meilleur modèle
 
@@ -382,7 +372,6 @@ else:
     best_model = model_2
 ```
 
----
 
 # 🧪 Évaluation finale sur le Test Set
 
@@ -418,7 +407,6 @@ print(
 
 Cette étape fournit une estimation plus fiable des performances du modèle sur de nouvelles données.
 
----
 
 # 📊 Matrice de confusion
 
@@ -461,7 +449,6 @@ La matrice permet d'identifier :
 
 Dans un problème de prédiction de décrochage, les faux négatifs peuvent être particulièrement importants : un étudiant réellement à risque mais classé comme non à risque pourrait ne pas bénéficier d'une intervention préventive.
 
----
 
 # 🔎 Analyse des facteurs prédictifs
 
@@ -499,7 +486,6 @@ Cette analyse permet de comprendre quelles variables contribuent le plus aux pr�
 
 > ⚠️ L'importance d'une variable ne signifie pas nécessairement qu'elle est une cause directe de l'abandon. Elle indique qu'elle contribue aux prédictions du modèle.
 
----
 
 # 💾 Sauvegarde du modèle
 
@@ -532,7 +518,6 @@ prediction = model.predict(
 )
 ```
 
----
 
 # 🧾 Sauvegarde des noms des variables
 
@@ -555,7 +540,6 @@ feature_names = joblib.load(
 
 Cela permet de conserver la correspondance entre les données d'entrée et le modèle.
 
----
 
 # 🔢 Versionnement du modèle
 
@@ -587,7 +571,6 @@ Il peut notamment permettre de savoir :
 * Quelle performance a été obtenue
 * Quand le modèle a été entraîné
 
----
 
 # 🧪 Reproductibilité
 
@@ -618,7 +601,6 @@ train_test_split(
 )
 ```
 
----
 
 # 📦 Bibliothèques utilisées
 
@@ -640,7 +622,6 @@ Installation :
 pip install pandas numpy scikit-learn xgboost matplotlib seaborn joblib
 ```
 
----
 
 # ▶️ Exécution du pipeline
 
@@ -674,7 +655,6 @@ et :
 evaluation/
 ```
 
----
 
 # 📌 Résumé du workflow
 
@@ -708,7 +688,6 @@ evaluation/
 14. Versionner les métadonnées
 ```
 
----
 
 # 📂 Artefacts produits
 
@@ -740,7 +719,6 @@ Contient les métadonnées et informations de version du modèle.
 
 Contient la visualisation de la matrice de confusion du modèle final.
 
----
 
 # 👥 Contribution à la partie Machine Learning
 
@@ -771,7 +749,6 @@ intégration des modifications dans GitHub.
 
 Les contributions sont complémentaires et sont intégrées au dépôt via Git et Pull Requests.
 
----
 
 # 🚀 Résultat attendu
 
