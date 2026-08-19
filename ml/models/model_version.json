@@ -1,0 +1,12 @@
+{
+    "model_name": "Random Forest",
+    "model_version": "1.0.0",
+    "dataset": "xAPI-Edu-Data",
+    "target": "Class",
+    "training_date": "2026-08-19",
+    "selection_metric": "validation_accuracy",
+    "validation_accuracy": 0.8194,
+    "test_accuracy": 0.76,
+    "test_f1_macro": 0.77,
+    "status": "validated"
+}
