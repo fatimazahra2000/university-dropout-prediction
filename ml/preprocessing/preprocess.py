@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+import joblib
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
@@ -52,5 +53,13 @@ def load_and_preprocess(file_path):
     X_train_scaled = scaler.fit_transform(X_train)
     X_val_scaled = scaler.transform(X_val)
     X_test_scaled = scaler.transform(X_test)
+
+    # --- Sauvegarde du scaler pour la reproductibilité et le déploiement ---
+    model_dir = os.path.join(root_dir, "ml", "models")
+    os.makedirs(model_dir, exist_ok=True)
+
+    scaler_path = os.path.join(model_dir, "scaler.pkl")
+    joblib.dump(scaler, scaler_path)
+    print(f"Scaler sauvegardé dans : {scaler_path}")
 
     return X_train_scaled, X_val_scaled, X_test_scaled, y_train, y_val, y_test, X.columns
