@@ -1,0 +1,21 @@
+# Orchestration
+dagster
+dagster-webserver
+
+# DataOps
+dlt[duckdb]
+duckdb
+dbt-duckdb
+
+# Data & ML
+pandas
+scikit-learn
+xgboost
+joblib
+matplotlib
+seaborn
+mlflow
+
+# API (Livrable 7)
+fastapi
+uvicorn

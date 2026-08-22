@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: raw_data
+    description: "Raw student data ingested with dlt into DuckDB."
+    schema: raw_data
+    tables:
+      - name: students_raw
+        description: "Raw xAPI-Edu-Data student records."

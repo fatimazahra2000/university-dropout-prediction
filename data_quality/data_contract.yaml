@@ -1,0 +1,150 @@
+version: "1.0"
+
+dataset:
+  name: students_raw
+  source: xAPI-Edu-Data
+  description: >
+    Données brutes des étudiants ingérées avec dlt
+    dans DuckDB, utilisées pour la prédiction de
+    l'abandon universitaire.
+
+  expected:
+    minimum_rows: 1
+    current_rows: 480
+
+  technical_columns:
+    - _dlt_load_id
+    - _dlt_id
+
+columns:
+
+  gender:
+    type: string
+    nullable: false
+    allowed_values:
+      - M
+      - F
+
+  nationality:
+    type: string
+    nullable: false
+
+  placeofbirth:
+    type: string
+    nullable: false
+
+  stageid:
+    type: string
+    nullable: false
+    allowed_values:
+      - lowerlevel
+      - MiddleSchool
+      - HighSchool
+
+  gradeid:
+    type: string
+    nullable: false
+
+  sectionid:
+    type: string
+    nullable: false
+    allowed_values:
+      - A
+      - B
+      - C
+
+  topic:
+    type: string
+    nullable: false
+
+  semester:
+    type: string
+    nullable: false
+    allowed_values:
+      - F
+      - S
+
+  relation:
+    type: string
+    nullable: false
+    allowed_values:
+      - Father
+      - Mum
+
+  raisedhands:
+    type: integer
+    nullable: false
+    constraints:
+      minimum: 0
+      maximum: 100
+
+  visitedresources:
+    type: integer
+    nullable: false
+    constraints:
+      minimum: 0
+      maximum: 100
+
+  announcementsview:
+    type: integer
+    nullable: false
+    constraints:
+      minimum: 0
+      maximum: 100
+
+  discussion:
+    type: integer
+    nullable: false
+    constraints:
+      minimum: 0
+      maximum: 100
+
+  parentansweringsurvey:
+    type: string
+    nullable: false
+    allowed_values:
+      - Yes
+      - No
+
+  parentschoolsatisfaction:
+    type: string
+    nullable: false
+    allowed_values:
+      - Good
+      - Bad
+
+  studentabsencedays:
+    type: string
+    nullable: false
+    allowed_values:
+      - Under-7
+      - Above-7
+
+  class:
+    type: string
+    nullable: false
+    allowed_values:
+      - L
+      - M
+      - H
+
+quality_rules:
+
+  uniqueness:
+    - _dlt_id
+
+  data_volume:
+    minimum_rows: 1
+
+  numeric_ranges:
+    - raisedhands
+    - visitedresources
+    - announcementsview
+    - discussion
+
+business_rules:
+
+  - name: absence_risk_mapping
+    description: >
+      Under-7 doit être transformé en absence_risk=0
+      et Above-7 en absence_risk=1 dans le modèle prepared_students.
