@@ -8,10 +8,10 @@ versionnement du modèle de prédiction du décrochage universitaire.
 - `log_to_mlflow.py` — charge le modèle et les artefacts produits par le
   module ML (`ml/models/`), les enregistre dans MLflow, puis enregistre le
   modèle dans le Model Registry
-- `experiments/` — stockage local des runs MLflow (généré automatiquement,
-  ignoré par Git)
-- `registry/` — stockage local du Model Registry (généré automatiquement,
-  ignoré par Git)
+- `mlflow.db` — base de données SQLite locale utilisée par MLflow pour
+  stocker les runs, métriques et le Model Registry (généré automatiquement
+  au premier lancement de `mlflow ui`, ignoré par Git — chaque personne a
+  sa propre base locale)
 
 ## Ce qui est loggé
 
