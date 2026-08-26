@@ -29,8 +29,8 @@ Depuis la racine du projet :
 docker compose -f deployment/docker-compose.yml up --build
 ```
 
-L'API est alors accessible sur `http://localhost:8000`.
-Documentation interactive (Swagger) : `http://localhost:8000/docs`
+L'API est alors accessible sur `http://localhost:3501`.
+Documentation interactive (Swagger) : `http://localhost:3501/docs`
 
 Pour arrêter :
 
@@ -41,7 +41,7 @@ docker compose -f deployment/docker-compose.yml down
 ## Exemple de requête
 
 ```bash
-curl -X POST http://localhost:8000/predict \
+curl -X POST http://localhost:3501/predict \
   -H "Content-Type: application/json" \
   -d '{
     "gender": "M",
@@ -84,6 +84,9 @@ Réponse attendue :
 - Les versions de `pandas`, `scikit-learn`, `joblib`, `fastapi` et `uvicorn`
   sont figées dans `requirements.txt` pour éviter les incompatibilités de
   désérialisation du modèle (`.pkl`).
+- Le port exposé côté hôte est `3501` (mappé vers le port interne `8000` du
+  conteneur), conformément au port attribué par le serveur Komodo utilisé
+  pour le déploiement cloud du groupe.
 
 ## Déploiement cloud
 
