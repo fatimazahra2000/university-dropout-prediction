@@ -3,7 +3,6 @@ services:
     build:
       context: ..
       dockerfile: deployment/Dockerfile
-    container_name: dropout-api
     ports:
-      - "8000:8000"
+      - "3501:8000"
     restart: unless-stopped
