@@ -17,7 +17,13 @@ FEATURES_PATH = os.path.join(ROOT_DIR, "ml", "models", "feature_names.pkl")
 
 model = joblib.load(MODEL_PATH)
 scaler = joblib.load(SCALER_PATH)
-feature_names = joblib.load(FEATURES_PATH)
+
+# Prefer the feature names stored by scikit-learn in the fitted scaler.
+# This avoids loading an old pandas Index pickle created by another pandas version.
+if hasattr(scaler, "feature_names_in_"):
+    feature_names = list(scaler.feature_names_in_)
+else:
+    feature_names = list(joblib.load(FEATURES_PATH))
 
 RISK_LABELS = {0: "Low Risk", 1: "Medium Risk", 2: "High Risk"}
 CLASS_LETTERS = {0: "L", 1: "M", 2: "H"}

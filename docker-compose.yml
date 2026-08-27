@@ -5,6 +5,8 @@ services:
       dockerfile: deployment/Dockerfile
     ports:
       - "3501:8000"
+    volumes:
+      - ./ml/models:/app/ml/models
     restart: unless-stopped
 
   mlflow:
@@ -27,6 +29,7 @@ services:
     volumes:
       - dagster_home:/app/dagster_home
       - ./data:/app/data
+      - ./ml/models:/app/ml/models
     environment:
       - DAGSTER_HOME=/app/dagster_home
     restart: unless-stopped
@@ -39,6 +42,7 @@ services:
     volumes:
       - dagster_home:/app/dagster_home
       - ./data:/app/data
+      - ./ml/models:/app/ml/models
     environment:
       - DAGSTER_HOME=/app/dagster_home
     restart: unless-stopped

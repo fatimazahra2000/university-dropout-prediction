@@ -43,7 +43,7 @@ def train_best_model():
 
     # Sauvegarde
     joblib.dump(best_model, os.path.join(model_dir, "best_model.pkl"))
-    joblib.dump(feature_names, os.path.join(model_dir, "feature_names.pkl"))
+    joblib.dump(list(feature_names), os.path.join(model_dir, "feature_names.pkl"))
     
     print(f"\nRESULTAT : Meilleur modèle '{best_name}' sauvegardé avec {best_acc:.2f} sur Val.")
 
