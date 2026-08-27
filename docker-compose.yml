@@ -1,0 +1,48 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: deployment/Dockerfile
+    ports:
+      - "3501:8000"
+    restart: unless-stopped
+
+  mlflow:
+    build:
+      context: .
+      dockerfile: mlflow/Dockerfile
+    ports:
+      - "5000:5000"
+    volumes:
+      - mlflow_data:/app/mlflow_store
+    restart: unless-stopped
+
+  dagster-webserver:
+    build:
+      context: .
+      dockerfile: dataops/dagster/Dockerfile
+    command: dagster-webserver -f dataops/dagster/definitions.py -h 0.0.0.0 -p 3000
+    ports:
+      - "3000:3000"
+    volumes:
+      - dagster_home:/app/dagster_home
+      - ./data:/app/data
+    environment:
+      - DAGSTER_HOME=/app/dagster_home
+    restart: unless-stopped
+
+  dagster-daemon:
+    build:
+      context: .
+      dockerfile: dataops/dagster/Dockerfile
+    command: dagster-daemon run -f dataops/dagster/definitions.py
+    volumes:
+      - dagster_home:/app/dagster_home
+      - ./data:/app/data
+    environment:
+      - DAGSTER_HOME=/app/dagster_home
+    restart: unless-stopped
+
+volumes:
+  mlflow_data:
+  dagster_home:
