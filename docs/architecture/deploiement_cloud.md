@@ -31,7 +31,7 @@ qui laissait la configuration vide — cause de l'état `Config Missing` /
 | Paramètre | Valeur |
 |---|---|
 | Repo | `fatimazahra2000/university-dropout-prediction` |
-| Branche | `main` |
+| Branche |`develop` (temporaire — sera basculé sur `main` une fois le lien Git validé par l'équipe) |
 | Fichier compose | `docker-compose.yml` (racine du repo) |
 | Account (auth GitHub) | Aucun requis (dépôt public) |
 
@@ -69,6 +69,12 @@ Ce webhook doit être vérifié côté paramètres GitHub du dépôt
 (`Settings > Webhooks`) pour confirmer qu'il est bien enregistré et qu'il
 recevra les futurs push sur `main`.
 
+## Historique de configuration
+
+- Configuration initiale : branche `main` (cohérente avec les règles Git du projet, `main` = versions stables).
+- Correction : branche changée pour `develop`, sur demande de la responsable du groupe, tant que le lien GitHub <-> Komodo n'a pas encore été testé en conditions réelles. Le passage à `main` sera fait une fois ce lien validé.
+
+
 ## État actuel
 
 - ✅ Configuration Git Repo sauvegardée dans Komodo (`Save`)
@@ -78,8 +84,8 @@ recevra les futurs push sur `main`.
 
 ## Prochaines étapes
 
-1. Confirmer avec l'équipe (notamment Hiba, responsable de l'API/Docker)
-   que `main` est prêt pour un déploiement.
+1.Confirmer avec l'équipe (notamment Hiba, responsable de l'API/Docker) que `develop` est prêt pour un déploiement de test. Le lien Git a été volontairement configuré sur `develop` plutôt que `main` tant que la
+   connexion GitHub <-> Komodo n'a pas encore été validée en conditions réelles (décision prise avec la responsable du groupe).
 2. Cliquer sur **Deploy** dans Komodo, ou déclencher via un `push` sur
    `main` (webhook déjà actif).
 3. Vérifier le bon démarrage des 4 services (`api`, `mlflow`,
