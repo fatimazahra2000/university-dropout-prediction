@@ -19,4 +19,7 @@ protobuf>=6.33.5,<7
 
 # API (Livrable 7)
 fastapi==0.128.0
-uvicorn==0.40.0
+uvicorn==0.40.0 
+# Tests (Livrable 8 - CI/CD) 
+pytest==8.3.4 
+httpx==0.28.1 
