@@ -1,4 +1,5 @@
 services:
+
   api:
     build:
       context: .
@@ -13,8 +14,6 @@ services:
     build:
       context: .
       dockerfile: mlflow/Dockerfile
-    ports:
-      - "5000:5000"
     volumes:
       - mlflow_data:/app/mlflow_store
     restart: unless-stopped
@@ -25,7 +24,7 @@ services:
       dockerfile: dataops/dagster/Dockerfile
     command: dagster-webserver -f dataops/dagster/definitions.py -h 0.0.0.0 -p 3000
     ports:
-      - "3000:3000"
+      - "3502:3000"
     volumes:
       - dagster_home:/app/dagster_home
       - ./data:/app/data
