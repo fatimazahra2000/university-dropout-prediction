@@ -56,3 +56,72 @@ intégré dans `model_monitor.py`, l'accuracy est repassée à 0.7639, cohérent
 avec le `test_accuracy` du modèle entraîné. Ce cas est visible sur le
 dashboard généré (`dashboard.png`), qui montre la chute puis la correction
 du drift détecté.
+
+
+
+---
+
+# Monitoring du service (API)
+
+**Responsable : Soukaina**
+
+À distinguer du monitoring du modèle ci-dessus (responsabilité de
+Wijdane) : cette partie surveille la santé technique du service API
+(disponibilité, temps de réponse, erreurs) — pas les performances du
+modèle ML.
+
+## Fichiers
+
+### `api_health_monitor.py`
+
+- Interroge l'endpoint `GET /health` de l'API
+- Mesure le temps de réponse (latence) de chaque requête
+- Détecte les erreurs (code HTTP différent de 200, timeout, connexion
+  refusée)
+- Journalise chaque vérification dans `service_metrics.csv`
+  (timestamp, status_code, response_time_ms, success, error)
+
+### `service_dashboard.py`
+
+- Lit `service_metrics.csv`
+- Génère un dashboard visuel (`service_dashboard.png`) avec :
+  - l'évolution du temps de réponse dans le temps
+  - l'évolution de la disponibilité (succès/échec) dans le temps
+- Affiche un résumé chiffré dans le terminal (disponibilité en %,
+  latence moyenne)
+
+## Utilisation
+
+1. S'assurer que l'API tourne (localement via Docker Compose, ou en
+   production sur Komodo) :
+```bash
+   docker compose up -d --build api
+```
+2. Lancer une vérification :
+```bash
+   python monitoring/api_health_monitor.py
+```
+3. Générer/mettre à jour le dashboard :
+```bash
+   python monitoring/service_dashboard.py
+```
+
+## Automatisation
+
+Un workflow GitHub Actions (`.github/workflows/service-monitoring.yml`)
+exécute automatiquement `api_health_monitor.py` toutes les 15 minutes,
+et conserve l'historique des métriques comme artifact téléchargeable.
+
+L'URL de l'API à surveiller est définie via la variable de repo GitHub
+`API_URL` (`Settings > Secrets and variables > Actions > Variables`).
+Tant que le déploiement Cloud réel n'est pas confirmé, cette variable
+n'est pas encore définie et le workflow utilise une valeur par défaut
+(`http://localhost:3501`), inaccessible depuis les runners GitHub — les
+exécutions échoueront donc normalement jusqu'à la mise à jour de cette
+variable après déploiement (voir `docs/architecture/deploiement_cloud.md`).
+
+## Résultats observés (tests locaux)
+
+Lors des tests effectués en local (conteneur Docker de l'API) :
+- Disponibilité mesurée : 100 % (5/5 vérifications)
+- Latence moyenne : ~32 ms

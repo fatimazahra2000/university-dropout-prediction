@@ -31,7 +31,7 @@ qui laissait la configuration vide — cause de l'état `Config Missing` /
 | Paramètre | Valeur |
 |---|---|
 | Repo | `fatimazahra2000/university-dropout-prediction` |
-| Branche | `main` |
+| Branche |`develop` (temporaire — sera basculé sur `main` une fois le lien Git validé par l'équipe) |
 | Fichier compose | `docker-compose.yml` (racine du repo) |
 | Account (auth GitHub) | Aucun requis (dépôt public) |
 
@@ -42,7 +42,8 @@ qui laissait la configuration vide — cause de l'état `Config Missing` /
 | `run_build` (Pre Build Images) | ✅ Activé | Le compose n'utilise que des directives `build:` ; sans cette option, Komodo ne reconstruirait pas les images à jour avant chaque déploiement |
 | Pre Pull Images | ✅ Activé (par défaut) | Sans effet direct ici (pas d'`image:` distante), laissé tel quel |
 | Destroy Before Deploy | ⬜ Désactivé | Pas nécessaire pour un premier déploiement propre |
-| Auto Update / Poll for Updates | ⬜ Désactivé (pour l'instant) | À activer une fois le premier déploiement manuel validé, pour éviter un redéploiement automatique non contrôlé |
+| Auto Update / Poll for Updates | ⬜ Désactivé (définitif) | Décision du professeur : le déploiement doit rester manuel, jamais automatique |
+| Webhook GitHub | ⬜ Supprimé (définitif) | Un webhook avait été créé puis testé, mais supprimé sur consigne du professeur : le déploiement doit être déclenché uniquement manuellement, pas à chaque push |
 
 ### Variables d'environnement
 
@@ -61,25 +62,64 @@ CLOUD_ENVIRONMENT=komodo
 (`mlflow`), pas `localhost`, car les conteneurs communiquent entre eux via
 le réseau interne créé par Docker Compose.
 
-### Webhook GitHub
+### Choix : déploiement manuel (pas de webhook)
 
-Un webhook de déploiement automatique est déjà configuré et **activé** côté
-Komodo (`Webhook Enabled: ENABLED`), pointant vers :https://komodo.s3.fsbm.ma/listener/github/
-Ce webhook doit être vérifié côté paramètres GitHub du dépôt
-(`Settings > Webhooks`) pour confirmer qu'il est bien enregistré et qu'il
-recevra les futurs push sur `main`.
+Un webhook de déploiement automatique avait initialement été testé (ajouté
+côté GitHub, pointant vers l'URL générée par Komodo). Le test a révélé une
+erreur 401 (absence de signature/secret non aligné entre GitHub et Komodo).
+
+Avant de corriger ce point, le professeur a précisé que le déploiement doit
+rester **manuel** : chaque mise en production doit être déclenchée
+volontairement via le bouton **Deploy** dans Komodo, jamais automatiquement
+suite à un push.
+
+En conséquence :
+- Le webhook a été **désactivé côté Komodo** (`Webhook Enabled: Disabled`)
+- Le webhook a été **supprimé côté GitHub** (`Settings > Webhooks`)
+- Les options `Poll for Updates`, `Auto Update` et `Full Stack Auto Update`
+  restent désactivées de façon définitive
+
+
+## Historique de configuration
+
+- Configuration initiale : branche `main` (cohérente avec les règles Git du projet, `main` = versions stables).
+- Correction : branche changée pour `develop`, sur demande de la responsable du groupe, tant que le lien GitHub <-> Komodo n'a pas encore été testé en conditions réelles. Le passage à `main` sera fait une fois ce lien validé.
+
+## Procédure de déploiement manuel
+
+Le déploiement est déclenché exclusivement par une action humaine, selon
+la procédure suivante :
+
+1. S'assurer que la branche `develop` est à jour et stable (toutes les
+   Pull Requests concernées ont été relues et fusionnées).
+2. Prévenir l'équipe (notamment Hiba, responsable de l'API/Docker) avant
+   de déclencher le déploiement, pour éviter tout conflit avec un travail
+   en cours.
+3. Se connecter à Komodo (`komodo.s3.fsbm.ma`), ouvrir le stack
+   `prediction_de_l_abandon_universitaire`.
+4. Vérifier dans l'onglet **Config** que la branche pointée est bien
+   `develop` (ou `main`, une fois le passage en production validé).
+5. Cliquer sur **Deploy**.
+6. Suivre la progression dans l'onglet **Log**.
+7. Une fois le déploiement terminé, vérifier dans l'onglet **Services**
+   que les 4 services (`api`, `mlflow`, `dagster-webserver`,
+   `dagster-daemon`) sont bien à l'état `Running`.
+8. Vérifier manuellement l'endpoint de santé de l'API
+   (`GET /health`) pour confirmer le bon fonctionnement.
 
 ## État actuel
 
 - ✅ Configuration Git Repo sauvegardée dans Komodo (`Save`)
+- ✅ Webhook testé, puis désactivé/supprimé sur consigne du professeur
+  (déploiement manuel exclusivement)
 - ⬜ **Déploiement réel non encore déclenché** (`Deploy`) : en attente de
   validation par l'équipe, pour s'assurer que `main` est à jour et que
   personne d'autre n'a un déploiement en cours.
 
 ## Prochaines étapes
 
-1. Confirmer avec l'équipe (notamment Hiba, responsable de l'API/Docker)
-   que `main` est prêt pour un déploiement.
+1.Confirmer avec l'équipe (notamment Hiba, responsable de l'API/Docker) que `develop` est prêt pour un déploiement de test. Le lien Git a été volontairement configuré sur `develop` plutôt que `main` tant que la
+   connexion GitHub <-> Komodo n'a pas encore été validée en conditions réelles (décision prise avec la responsable du groupe).
 2. Cliquer sur **Deploy** dans Komodo, ou déclencher via un `push` sur
    `main` (webhook déjà actif).
 3. Vérifier le bon démarrage des 4 services (`api`, `mlflow`,
