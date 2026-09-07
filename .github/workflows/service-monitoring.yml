@@ -32,3 +32,8 @@ jobs:
           name: service-metrics
           path: monitoring/service_metrics.csv
           retention-days: 30
+
+
+
+
+# Workflow de monitoring du service - v1
