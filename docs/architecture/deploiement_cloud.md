@@ -112,20 +112,24 @@ la procédure suivante :
 - ✅ Configuration Git Repo sauvegardée dans Komodo (`Save`)
 - ✅ Webhook testé, puis désactivé/supprimé sur consigne du professeur
   (déploiement manuel exclusivement)
-- ⬜ **Déploiement réel non encore déclenché** (`Deploy`) : en attente de
-  validation par l'équipe, pour s'assurer que `main` est à jour et que
-  personne d'autre n'a un déploiement en cours.
+- ✅ **Premier déploiement manuel réussi** (06/09/2026, commit `fcc1dcb`,
+  branche `develop`) : les 4 services (`api`, `mlflow`,
+  `dagster-webserver`, `dagster-daemon`) sont à l'état `RUNNING`.
+- ✅ Vérification interne de l'API : `GET /health` répond
+  `{"status":"ok"}` (testé via le terminal Komodo, directement dans le
+  conteneur `api`, sur le port interne 8000).
+- ⚠️ **Accès externe non fonctionnel** : l'adresse publique
+  (`41.250.197.226:3501`) n'est pas joignable depuis l'extérieur du
+  réseau de l'école (timeout de connexion). L'application fonctionne
+  correctement ; il s'agit d'une restriction réseau/pare-feu côté
+  infrastructure, à clarifier avec l'administrateur du serveur `vh3`.
 
 ## Prochaines étapes
 
-1.Confirmer avec l'équipe (notamment Hiba, responsable de l'API/Docker) que `develop` est prêt pour un déploiement de test. Le lien Git a été volontairement configuré sur `develop` plutôt que `main` tant que la
-   connexion GitHub <-> Komodo n'a pas encore été validée en conditions réelles (décision prise avec la responsable du groupe).
-2. Cliquer sur **Deploy** dans Komodo, ou déclencher via un `push` sur
-   `main` (webhook déjà actif).
-3. Vérifier le bon démarrage des 4 services (`api`, `mlflow`,
-   `dagster-webserver`, `dagster-daemon`) dans l'onglet **Services** du
-   stack Komodo.
-4. Vérifier `GET /health` sur l'API déployée.
-5. Mettre en place le monitoring du service (disponibilité, temps de
-   réponse, erreurs) — voir section Monitoring du rapport.
-
+1. Clarifier avec l'administrateur si le serveur `vh3` est accessible
+   uniquement depuis le réseau de l'école, ou si une ouverture de port
+   est nécessaire pour un accès externe au port 3501.
+2. Une fois l'accès externe confirmé ou configuré, valider `GET /health`
+   depuis l'extérieur du réseau.
+3. Basculer la configuration de la branche `develop` vers `main` une
+   fois le fonctionnement validé en conditions réelles par l'équipe.
