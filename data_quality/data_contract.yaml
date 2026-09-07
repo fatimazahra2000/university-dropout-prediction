@@ -16,14 +16,13 @@ dataset:
     - _dlt_load_id
     - _dlt_id
 
+
 columns:
 
   gender:
     type: string
     nullable: false
-    allowed_values:
-      - M
-      - F
+    allowed_values: ["M", "F"]
 
   nationality:
     type: string
@@ -37,9 +36,9 @@ columns:
     type: string
     nullable: false
     allowed_values:
-      - lowerlevel
-      - MiddleSchool
-      - HighSchool
+      - "lowerlevel"
+      - "MiddleSchool"
+      - "HighSchool"
 
   gradeid:
     type: string
@@ -48,10 +47,7 @@ columns:
   sectionid:
     type: string
     nullable: false
-    allowed_values:
-      - A
-      - B
-      - C
+    allowed_values: ["A", "B", "C"]
 
   topic:
     type: string
@@ -60,16 +56,12 @@ columns:
   semester:
     type: string
     nullable: false
-    allowed_values:
-      - F
-      - S
+    allowed_values: ["F", "S"]
 
   relation:
     type: string
     nullable: false
-    allowed_values:
-      - Father
-      - Mum
+    allowed_values: ["Father", "Mum"]
 
   raisedhands:
     type: integer
@@ -102,39 +94,43 @@ columns:
   parentansweringsurvey:
     type: string
     nullable: false
-    allowed_values:
-      - Yes
-      - No
+    allowed_values: ["Yes", "No"]
 
   parentschoolsatisfaction:
     type: string
     nullable: false
-    allowed_values:
-      - Good
-      - Bad
+    allowed_values: ["Good", "Bad"]
 
   studentabsencedays:
     type: string
     nullable: false
-    allowed_values:
-      - Under-7
-      - Above-7
+    allowed_values: ["Under-7", "Above-7"]
 
   class:
     type: string
     nullable: false
-    allowed_values:
-      - L
-      - M
-      - H
+    allowed_values: ["L", "M", "H"]
+
 
 quality_rules:
+
+  # ------------------------------------------------------------
+  # Unicité technique
+  # ------------------------------------------------------------
 
   uniqueness:
     - _dlt_id
 
+  # ------------------------------------------------------------
+  # Volume minimal
+  # ------------------------------------------------------------
+
   data_volume:
     minimum_rows: 1
+
+  # ------------------------------------------------------------
+  # Contraintes numériques
+  # ------------------------------------------------------------
 
   numeric_ranges:
     - raisedhands
@@ -142,9 +138,71 @@ quality_rules:
     - announcementsview
     - discussion
 
+  # ------------------------------------------------------------
+  # Unicité métier sur les données RAW
+  #
+  # Les doublons détectés ici sont des WARNING.
+  # Ils seront traités par la déduplication dbt
+  # dans prepared_students.
+  # ------------------------------------------------------------
+
+  raw_business_uniqueness:
+    columns:
+      - gender
+      - nationality
+      - placeofbirth
+      - stageid
+      - gradeid
+      - sectionid
+      - topic
+      - semester
+      - relation
+      - raisedhands
+      - visitedresources
+      - announcementsview
+      - discussion
+      - parentansweringsurvey
+      - parentschoolsatisfaction
+      - studentabsencedays
+      - class
+
+  # ------------------------------------------------------------
+  # Unicité métier sur PREPARED
+  #
+  # Ici les doublons sont considérés comme une ERROR,
+  # car prepared_students doit être dédupliquée.
+  # ------------------------------------------------------------
+
+  prepared_business_uniqueness:
+    columns:
+      - gender
+      - nationality
+      - placeofbirth
+      - stageid
+      - gradeid
+      - sectionid
+      - topic
+      - semester
+      - relation
+      - raisedhands
+      - visitedresources
+      - announcementsview
+      - discussion
+      - parentansweringsurvey
+      - parentschoolsatisfaction
+      - studentabsencedays
+      - class
+
+
 business_rules:
 
   - name: absence_risk_mapping
     description: >
       Under-7 doit être transformé en absence_risk=0
-      et Above-7 en absence_risk=1 dans le modèle prepared_students.
+      et Above-7 en absence_risk=1 dans le modèle
+      prepared_students.
+
+  - name: risk_class_consistency
+    description: >
+      risk_class doit être identique à class
+      dans prepared_students.

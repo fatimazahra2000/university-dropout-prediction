@@ -1,4 +1,5 @@
 select
+    _dlt_id,
     gender,
     nationality,
     placeofbirth,
