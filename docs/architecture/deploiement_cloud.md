@@ -138,9 +138,30 @@ précisant la convention `exp.s3.fsbm.ma:PORT` pour tous les groupes.
 
 ## Prochaines étapes
 
-1. Mettre à jour la variable de dépôt GitHub `API_URL`
+1. Configurer la variable de dépôt GitHub `API_URL`
    (`Settings > Secrets and variables > Actions > Variables`) avec la
-   valeur `http://exp.s3.fsbm.ma:3501`, afin que le monitoring automatisé
-   (`service-monitoring.yml`) surveille la véritable API de production.
+   valeur `http://exp.s3.fsbm.ma:3501`, afin que le monitoring
+   automatisé (`service-monitoring.yml`) surveille la véritable API de
+   production plutôt que `localhost`.
 2. Basculer la configuration de la branche `develop` vers `main` une
    fois validé par l'équipe.
+
+## Limitation connue : automatisation du monitoring
+
+GitHub Actions n'active les déclencheurs `schedule` (cron) et
+`workflow_dispatch` (déclenchement manuel) d'un workflow que si celui-ci
+existe sur la **branche par défaut** du dépôt, qui est `main` dans ce
+projet. Le fichier `.github/workflows/service-monitoring.yml` existe
+actuellement uniquement sur `develop`, ce qui l'empêche d'apparaître dans
+l'onglet Actions et de se déclencher automatiquement toutes les 15
+minutes, comme initialement prévu.
+
+Le script de monitoring lui-même (`api_health_monitor.py`) fonctionne
+correctement et a été validé manuellement en local et contre l'API de
+production (voir section « État actuel » ci-dessus). Seule son
+automatisation via GitHub Actions reste en attente, volontairement, tant
+que la fusion de `develop` vers `main` n'a pas été validée par l'équipe.
+Cette fusion étant une opération purement liée au dépôt Git, elle
+n'entraîne aucun redéploiement sur Komodo (le webhook de déploiement
+automatique restant désactivé, conformément à la consigne du
+professeur).
