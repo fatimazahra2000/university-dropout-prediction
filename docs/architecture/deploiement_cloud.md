@@ -118,18 +118,29 @@ la procédure suivante :
 - ✅ Vérification interne de l'API : `GET /health` répond
   `{"status":"ok"}` (testé via le terminal Komodo, directement dans le
   conteneur `api`, sur le port interne 8000).
-- ⚠️ **Accès externe non fonctionnel** : l'adresse publique
-  (`41.250.197.226:3501`) n'est pas joignable depuis l'extérieur du
-  réseau de l'école (timeout de connexion). L'application fonctionne
-  correctement ; il s'agit d'une restriction réseau/pare-feu côté
-  infrastructure, à clarifier avec l'administrateur du serveur `vh3`.
+- ✅ **Accès externe confirmé et fonctionnel.** L'accès direct via
+  l'adresse IP du serveur (`41.250.197.226:3501`) était filtré par le
+  pare-feu. Le professeur a précisé la règle d'accès officielle : chaque
+  groupe dispose d'une plage de ports dédiée (notre groupe : `35XX`), et
+  l'accès se fait via le nom de domaine `exp.s3.fsbm.ma:PORT`, et non par
+  l'adresse IP brute du serveur.
+  URL de production : `http://exp.s3.fsbm.ma:3501`
+  Vérifié le 07/09/2026 : `GET http://exp.s3.fsbm.ma:3501/health` répond
+  `{"status":"ok"}` depuis un réseau externe.
+
+## Leçon retenue
+
+L'erreur initiale (test via l'IP brute du serveur plutôt que via le nom
+de domaine `exp.s3.fsbm.ma`) a conduit à un diagnostic de blocage réseau
+qui s'est avéré être, en réalité, une simple erreur de méthode d'accès.
+Ce point a été clarifié après consultation du message du professeur
+précisant la convention `exp.s3.fsbm.ma:PORT` pour tous les groupes.
 
 ## Prochaines étapes
 
-1. Clarifier avec l'administrateur si le serveur `vh3` est accessible
-   uniquement depuis le réseau de l'école, ou si une ouverture de port
-   est nécessaire pour un accès externe au port 3501.
-2. Une fois l'accès externe confirmé ou configuré, valider `GET /health`
-   depuis l'extérieur du réseau.
-3. Basculer la configuration de la branche `develop` vers `main` une
-   fois le fonctionnement validé en conditions réelles par l'équipe.
+1. Mettre à jour la variable de dépôt GitHub `API_URL`
+   (`Settings > Secrets and variables > Actions > Variables`) avec la
+   valeur `http://exp.s3.fsbm.ma:3501`, afin que le monitoring automatisé
+   (`service-monitoring.yml`) surveille la véritable API de production.
+2. Basculer la configuration de la branche `develop` vers `main` une
+   fois validé par l'équipe.
