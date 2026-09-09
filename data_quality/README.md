@@ -2,19 +2,23 @@
 
 ## 1. Présentation
 
-Le dossier `data_quality/` regroupe les composants responsables de la
-validation et du contrôle de la qualité des données dans le projet
-**University Dropout Prediction**.
+Le dossier `data_quality/` regroupe les composants dédiés au contrôle et à la
+validation de la qualité des données du projet **University Dropout Prediction**.
 
-L'objectif de cette étape est de s'assurer que les données ingérées sont
-complètes, cohérentes, conformes aux règles définies et suffisamment
-fiables avant leur utilisation par les étapes de transformation et de
+L'objectif est de vérifier que les données sont suffisamment fiables et
+cohérentes avant leur utilisation par les étapes de transformation et de
 Machine Learning.
 
-La Data Quality intervient après l'ingestion des données avec DLT et leur
-stockage dans DuckDB.
+La démarche Data Quality est appliquée à deux niveaux :
 
-Le flux général du projet est :
+- **RAW** : données directement issues de l'ingestion ;
+- **PREPARED** : données après transformation et déduplication.
+
+Cette distinction est importante car elle permet de détecter les anomalies
+présentes dans les données sources avant qu'elles ne soient éventuellement
+modifiées par les transformations.
+
+Le flux de données concerné est :
 
 ```text
 xAPI-Edu-Data.csv
@@ -23,52 +27,48 @@ xAPI-Edu-Data.csv
        DLT
         │
         ▼
-     DuckDB
+DuckDB / raw_data.students_raw
         │
-        ▼
- Data Quality
+        ├──────────────► Data Quality RAW
         │
         ▼
        dbt
         │
         ▼
-prepared_students
+main.stg_students
         │
         ▼
-     Dagster
+main.prepared_students
         │
-        ▼
-Machine Learning
+        ├──────────────► Data Quality PREPARED
         │
-        ▼
-     MLflow
-        │
-        ▼
-    FastAPI
+        └──────────────► Règles métier
 ```
 
-> Dagster constitue la couche d'orchestration. Il coordonne les différentes
-> étapes du pipeline mais ne remplace ni DLT, ni dbt, ni les contrôles de
-> qualité.
+L'orchestration de ces différentes étapes est réalisée séparément dans le
+projet.
 
 ---
 
 ## 2. Objectifs
 
-La Data Quality permet de :
+La démarche Data Quality permet de :
 
-- vérifier que le dataset n'est pas vide ;
-- vérifier la présence des colonnes attendues ;
-- détecter les valeurs NULL ;
-- vérifier l'unicité des identifiants ;
-- contrôler les valeurs catégorielles ;
-- contrôler les plages des variables numériques ;
-- documenter les contraintes attendues sur les données ;
-- vérifier les données transformées avec les tests dbt ;
-- détecter les problèmes avant l'étape de Machine Learning.
+* vérifier que le dataset n'est pas vide ;
+* vérifier la présence des colonnes attendues ;
+* contrôler la complétude des données ;
+* détecter les valeurs NULL interdites ;
+* vérifier les valeurs catégorielles autorisées ;
+* contrôler les plages des variables numériques ;
+* vérifier l'unicité des identifiants techniques ;
+* détecter les doublons de lignes exactes ;
+* détecter les doublons métier ;
+* vérifier la qualité des données préparées ;
+* vérifier certaines règles métier ;
+* produire un statut global `PASS`, `PASS_WITH_WARNINGS` ou `FAIL`.
 
-L'objectif final est de garantir que les données utilisées pour entraîner
-le modèle de Machine Learning respectent les règles définies dans le projet.
+L'objectif final est de fournir des données fiables pour les étapes
+suivantes du pipeline.
 
 ---
 
@@ -79,78 +79,158 @@ data_quality/
 │
 ├── data_contract.yaml
 ├── quality_checks.py
+├── check_business_rule.py
 ├── lineage.md
 └── README.md
 ```
 
 ### `data_contract.yaml`
 
-Le fichier `data_contract.yaml` définit les règles et contraintes attendues
-sur les données.
+Le fichier `data_contract.yaml` formalise les contraintes attendues sur les
+données.
 
-Il permet notamment de documenter :
+Il définit notamment :
 
-- les colonnes obligatoires ;
-- les valeurs autorisées ;
-- les contraintes de complétude ;
-- les contraintes d'unicité ;
-- les plages de valeurs ;
-- certaines règles métier.
+* les colonnes obligatoires ;
+* les contraintes de complétude ;
+* les valeurs autorisées ;
+* les plages numériques ;
+* les contraintes d'unicité ;
+* l'unicité métier RAW ;
+* l'unicité métier PREPARED ;
+* certaines règles métier.
 
-Le Data Contract représente donc les règles attendues pour les données.
-
-### `quality_checks.py`
-
-Le fichier `quality_checks.py` contient les contrôles de qualité exécutés
-sur les données brutes présentes dans DuckDB.
-
-Il vérifie notamment :
-
-- le volume du dataset ;
-- la présence des colonnes ;
-- l'absence de valeurs NULL ;
-- l'unicité de `_dlt_id` ;
-- la validité des valeurs catégorielles ;
-- les plages des variables numériques.
-
-Le script produit un rapport indiquant pour chaque règle si elle est
-respectée ou non.
-
-### `lineage.md`
-
-Le fichier `lineage.md` documente le parcours des données dans
-l'architecture du projet.
-
-Il permet de suivre le chemin :
-
-```text
-Source
-  ↓
-DLT
-  ↓
-DuckDB
-  ↓
-Data Quality
-  ↓
-dbt
-  ↓
-Dagster
-  ↓
-Machine Learning
-  ↓
-MLflow
-  ↓
-FastAPI
-```
-
-### `README.md`
-
-Ce fichier présente le module Data Quality, son organisation, les règles
-de contrôle et les commandes permettant d'exécuter les vérifications.
+Le Data Contract constitue donc la référence des règles de qualité utilisées
+par les contrôles.
 
 ---
 
-## 4. Source des données
+### `quality_checks.py`
+
+Le fichier `quality_checks.py` contient les contrôles techniques de qualité.
+
+Il peut être utilisé sur différents types de données :
+
+```python
+run_quality_checks(df, dataset_type="raw")
+```
+
+ou :
+
+```python
+run_quality_checks(df, dataset_type="prepared")
+```
+
+Les contrôles couvrent notamment :
+
+* volume ;
+* présence des colonnes ;
+* valeurs NULL ;
+* valeurs autorisées ;
+* plages numériques ;
+* doublons exacts ;
+* unicité de `_dlt_id` ;
+* doublons métier.
+
+Le script retourne un rapport contenant notamment :
+
+```text
+row_count
+column_count
+completeness
+duplicates
+duplicate_ids
+business_duplicates
+business_duplicate_groups
+errors
+warnings
+status
+```
+
+---
+
+### `check_business_rule.py`
+
+Le fichier `check_business_rule.py` contient les contrôles de cohérence
+métier appliqués aux données préparées.
+
+Deux règles principales sont actuellement contrôlées :
+
+```text
+absence_risk
+risk_class
+```
+
+La première vérifie la cohérence entre :
+
+```text
+studentabsencedays
+absence_risk
+```
+
+avec la règle :
+
+```text
+Under-7  → absence_risk = 0
+Above-7  → absence_risk = 1
+```
+
+La seconde vérifie la cohérence entre :
+
+```text
+risk_class
+class
+```
+
+Ces contrôles sont séparés des contrôles techniques afin de distinguer la
+qualité structurelle des données de leur cohérence métier.
+
+---
+
+### `lineage.md`
+
+Le fichier `lineage.md` documente la traçabilité des données dans le projet.
+
+Il permet notamment de suivre le parcours :
+
+```text
+xAPI-Edu-Data.csv
+        ↓
+DLT
+        ↓
+raw_data.students_raw
+        ↓
+Data Quality
+        ↓
+stg_students
+        ↓
+prepared_students
+        ↓
+Machine Learning
+        ↓
+MLflow
+        ↓
+FastAPI
+```
+
+Le fichier permet donc de comprendre l'origine des données, leurs
+transformations et leur destination.
+
+---
+
+### `README.md`
+
+Ce fichier documente :
+
+* l'objectif de la Data Quality ;
+* les fichiers du module ;
+* les contrôles réalisés ;
+* les résultats obtenus ;
+* les commandes permettant de reproduire les vérifications.
+
+---
+
+# 4. Source des données
 
 Le projet utilise le dataset :
 
@@ -158,7 +238,7 @@ Le projet utilise le dataset :
 xAPI-Edu-Data.csv
 ```
 
-Le fichier source se trouve dans :
+Le fichier est situé dans :
 
 ```text
 data/
@@ -166,109 +246,192 @@ data/
     └── xAPI-Edu-Data.csv
 ```
 
-Les données représentent différentes informations relatives aux étudiants,
-à leur environnement scolaire et à leurs interactions avec les ressources
+Les données contiennent différentes caractéristiques liées aux étudiants,
+à leur environnement académique et à leurs interactions avec les ressources
 pédagogiques.
 
 ---
 
-## 5. Ingestion des données
+# 5. Données RAW
 
-L'ingestion est réalisée avec **dlt**.
-
-Le code d'ingestion se trouve dans :
-
-```text
-dataops/
-└── dlt/
-    ├── ingest_data.py
-    ├── check_db.py
-    └── README.md
-```
-
-Le script `ingest_data.py` :
-
-1. lit le fichier CSV ;
-2. nettoie les noms des colonnes ;
-3. crée le pipeline dlt ;
-4. charge les données dans DuckDB ;
-5. crée ou remplace la table `students_raw`.
-
-La configuration actuelle du pipeline est :
-
-```text
-Pipeline name : student_pipeline
-Destination   : duckdb
-Dataset       : raw_data
-Table         : students_raw
-```
-
-La table obtenue est :
+Après ingestion, les données sont disponibles dans DuckDB sous :
 
 ```text
 raw_data.students_raw
 ```
 
-dans la base :
+La table contient les données du dataset ainsi que les informations
+techniques générées par dlt, notamment :
 
 ```text
-student_pipeline.duckdb
-```
-
----
-
-## 6. Stockage DuckDB
-
-Les données brutes sont stockées dans :
-
-```text
-student_pipeline.duckdb
-```
-
-La table principale est :
-
-```text
-raw_data.students_raw
-```
-
-Cette table contient les données après ingestion ainsi que les colonnes
-techniques ajoutées par dlt :
-
-```text
-_dlt_load_id
 _dlt_id
+_dlt_load_id
 ```
 
-Le fichier DuckDB est généré localement et n'est pas versionné dans Git.
+La couche RAW constitue le premier niveau contrôlé par la démarche Data
+Quality.
 
-Il est exclu du dépôt grâce au `.gitignore`.
-
-La base peut donc être reconstruite à partir du dataset et du code
-d'ingestion.
+L'objectif est de mesurer la qualité réelle des données reçues avant toute
+transformation.
 
 ---
 
-## 7. Contrôles de qualité
+# 6. Contrôles Data Quality RAW
 
-Les contrôles actuellement implémentés couvrent plusieurs dimensions de la
-qualité des données.
+## 6.1 Dataset non vide
 
-### 7.1 Dataset non vide
-
-Le premier contrôle vérifie que le dataset contient effectivement des
-enregistrements.
+Le premier contrôle vérifie que le dataset contient des enregistrements.
 
 Résultat actuel :
 
 ```text
-[PASS] Dataset non vide (480 lignes)
+Nombre de lignes : 480
 ```
 
-### 7.2 Présence des colonnes
+Le dataset n'est donc pas vide.
 
-Le script vérifie que toutes les colonnes nécessaires sont présentes.
+---
 
-Les principales colonnes contrôlées sont :
+## 6.2 Nombre de colonnes
+
+Le dataset RAW contrôlé contient :
+
+```text
+19 colonnes
+```
+
+Les colonnes attendues sont notamment :
+
+```text
+_dlt_id
+gender
+nationality
+placeofbirth
+stageid
+gradeid
+sectionid
+topic
+semester
+relation
+raisedhands
+visitedresources
+announcementsview
+discussion
+parentansweringsurvey
+parentschoolsatisfaction
+studentabsencedays
+class
+```
+
+---
+
+## 6.3 Complétude
+
+Les colonnes soumises à une contrainte de non-nullité sont contrôlées afin
+de détecter les valeurs manquantes.
+
+Résultat actuel :
+
+```text
+Complétude : 100.00%
+```
+
+Aucune anomalie de complétude n'a donc été détectée.
+
+---
+
+## 6.4 Valeurs catégorielles
+
+Le contrôle vérifie que les valeurs des variables catégorielles respectent
+les valeurs autorisées définies dans le Data Contract.
+
+Les contrôles concernent notamment :
+
+```text
+gender
+stageid
+sectionid
+semester
+relation
+parentansweringsurvey
+parentschoolsatisfaction
+studentabsencedays
+class
+```
+
+Une valeur qui ne correspondrait pas aux modalités attendues serait
+considérée comme une anomalie de qualité.
+
+---
+
+## 6.5 Plages numériques
+
+Les variables numériques sont contrôlées afin de vérifier qu'elles restent
+dans les plages attendues.
+
+Les principales variables concernées sont :
+
+```text
+raisedhands
+visitedresources
+announcementsview
+discussion
+```
+
+Les valeurs sont contrôlées par rapport aux bornes définies dans le Data
+Contract.
+
+---
+
+# 7. Contrôle des identifiants
+
+L'identifiant technique `_dlt_id` est soumis à une contrainte d'unicité.
+
+Une vérification spécifique a été réalisée :
+
+```text
+Nombre total de lignes        : 480
+Nombre d'identifiants uniques : 480
+```
+
+Ainsi :
+
+```text
+480 = 480
+```
+
+Aucun `_dlt_id` dupliqué n'a été détecté.
+
+---
+
+# 8. Doublons de lignes exactes
+
+Un contrôle des doublons sur l'ensemble des colonnes permet de détecter les
+lignes strictement identiques.
+
+Résultat :
+
+```text
+Doublons de lignes : 0
+```
+
+Il n'existe donc aucun doublon exact dans les données RAW.
+
+Cependant, l'absence de doublons exacts ne signifie pas nécessairement
+l'absence de doublons du point de vue métier.
+
+---
+
+# 9. Détection des doublons métier
+
+Une deuxième vérification a donc été mise en place pour détecter les
+doublons métier.
+
+Une observation est considérée comme doublon métier lorsque plusieurs
+lignes possèdent les mêmes caractéristiques métier, même si leur identifiant
+technique `_dlt_id` est différent.
+
+La clé métier utilisée repose notamment sur :
 
 ```text
 gender
@@ -290,227 +453,249 @@ studentabsencedays
 class
 ```
 
-### 7.3 Complétude
-
-Les colonnes importantes sont contrôlées afin de détecter les valeurs NULL.
-
-Exemple :
+Le contrôle a détecté :
 
 ```text
-[PASS] gender: aucune valeur NULL
-[PASS] nationality: aucune valeur NULL
-[PASS] class: aucune valeur NULL
+Doublons métier              : 4 lignes
+Groupes de doublons métier   : 2
+```
+
+Les quatre lignes correspondent donc à deux groupes, chaque groupe
+comportant deux observations.
+
+---
+
+# 10. Gestion des doublons métier
+
+Les doublons métier détectés dans RAW ne sont pas supprimés directement
+pendant le contrôle de qualité.
+
+Ils sont conservés afin de garder une vision fidèle des données sources et
+sont signalés comme **warnings**.
+
+Le résultat du contrôle est donc :
+
+```text
+Nombre de lignes      : 480
+Nombre de colonnes    : 19
+Complétude            : 100.00%
+Doublons de lignes    : 0
+IDs DLT dupliqués     : 0
+Doublons métier       : 4
+Groupes doublons      : 2
+
+WARNINGS :
+- 4 ligne(s) impliquée(s) dans 2 groupe(s) de doublons métier RAW
+
+Statut : PASS_WITH_WARNINGS
+```
+
+Le statut `PASS_WITH_WARNINGS` signifie qu'aucune erreur bloquante n'a été
+détectée, mais qu'une anomalie de qualité a été identifiée et documentée.
+
+---
+
+# 11. Déduplication lors de la préparation
+
+La déduplication métier est ensuite réalisée lors de la préparation des
+données.
+
+Le flux est :
+
+```text
+RAW
+480 lignes
+   │
+   │ Détection de 2 groupes de doublons métier
+   ▼
+Déduplication
+   │
+   ▼
+PREPARED
+478 lignes
+```
+
+La préparation permet ainsi d'éviter que les doublons métier identifiés dans
+RAW ne soient transmis aux étapes suivantes.
+
+Cette stratégie permet de conserver la traçabilité du problème dans les
+données sources tout en produisant un dataset préparé plus propre.
+
+---
+
+# 12. Contrôles PREPARED
+
+Après transformation, les données sont disponibles dans :
+
+```text
+main.prepared_students
+```
+
+Les contrôles Data Quality sont également appliqués à cette table.
+
+L'objectif est de vérifier que :
+
+* les transformations ont produit des données cohérentes ;
+* les contraintes de qualité sont toujours respectées ;
+* les doublons métier ont bien été traités ;
+* les variables calculées utilisées par la suite sont correctement produites.
+
+Le nombre de lignes obtenu après déduplication est :
+
+```text
+478 lignes
 ```
 
 ---
 
-## 8. Contrôle d'unicité
+# 13. Règles métier
 
-L'identifiant technique généré par dlt :
+Les contrôles techniques ne suffisent pas à garantir la cohérence des
+données. Des règles métier spécifiques sont donc implémentées dans :
 
 ```text
-_dlt_id
+data_quality/check_business_rule.py
 ```
 
-doit être unique pour chaque enregistrement.
+## 13.1 Règle `absence_risk`
 
-Le dernier contrôle a donné :
-
-```text
-Total des lignes       : 480
-Identifiants distincts : 480
-```
-
-Le contrôle d'unicité est donc validé.
-
----
-
-## 9. Validation des valeurs catégorielles
-
-Certaines variables sont catégorielles et doivent respecter un ensemble de
-valeurs attendues.
-
-Les contrôles concernent notamment :
+La variable `absence_risk` est calculée à partir de :
 
 ```text
-gender
-stageid
-sectionid
-semester
-relation
-parentansweringsurvey
-parentschoolsatisfaction
 studentabsencedays
+```
+
+La règle est :
+
+```text
+studentabsencedays = Under-7
+        → absence_risk = 0
+
+studentabsencedays = Above-7
+        → absence_risk = 1
+```
+
+Le contrôle vérifie également l'absence de valeurs NULL.
+
+Résultat :
+
+```text
+Violations absence_risk : 0
+```
+
+---
+
+## 13.2 Règle `risk_class`
+
+La variable :
+
+```text
+risk_class
+```
+
+doit être cohérente avec :
+
+```text
 class
 ```
 
-Par exemple, `studentabsencedays` possède les valeurs :
+Le contrôle vérifie donc :
 
 ```text
-Under-7
-Above-7
+risk_class = class
 ```
 
-Le contrôle vérifie qu'aucune valeur inattendue n'est présente.
+ainsi que l'absence de valeurs NULL.
+
+Résultat :
+
+```text
+Violations risk_class : 0
+```
 
 ---
 
-## 10. Contrôle des variables numériques
+## 13.3 Résultat des règles métier
 
-Les variables numériques suivantes sont contrôlées :
-
-```text
-raisedhands
-visitedresources
-announcementsview
-discussion
-```
-
-Les valeurs attendues sont comprises entre :
-
-```text
-0 et 100
-```
-
-Les valeurs observées dans les données sont :
-
-```text
-raisedhands:
-    min = 0
-    max = 100
-
-visitedresources:
-    min = 0
-    max = 99
-
-announcementsview:
-    min = 0
-    max = 98
-
-discussion:
-    min = 1
-    max = 99
-```
-
-Les valeurs observées respectent donc les plages attendues.
-
----
-
-## 11. Résultat du contrôle Data Quality
-
-Le script :
-
-```text
-data_quality/quality_checks.py
-```
-
-peut être exécuté depuis la racine du projet avec :
+L'exécution de :
 
 ```powershell
-py data_quality\quality_checks.py
+python data_quality\check_business_rule.py
 ```
 
-Le dernier contrôle a produit :
+produit actuellement :
 
 ```text
-==================================================
-
-       DATA QUALITY REPORT
-
-==================================================
-
-[PASS] Dataset non vide (480 lignes)
-
-[PASS] Colonne présente : gender
-[PASS] Colonne présente : nationality
-[PASS] Colonne présente : placeofbirth
-[PASS] Colonne présente : stageid
-[PASS] Colonne présente : gradeid
-[PASS] Colonne présente : sectionid
-[PASS] Colonne présente : topic
-[PASS] Colonne présente : semester
-[PASS] Colonne présente : relation
-[PASS] Colonne présente : raisedhands
-[PASS] Colonne présente : visitedresources
-[PASS] Colonne présente : announcementsview
-[PASS] Colonne présente : discussion
-[PASS] Colonne présente : parentansweringsurvey
-[PASS] Colonne présente : parentschoolsatisfaction
-[PASS] Colonne présente : studentabsencedays
-[PASS] Colonne présente : class
-
-[PASS] _dlt_id unique
-
-[PASS] gender: aucune valeur NULL
-[PASS] nationality: aucune valeur NULL
-...
-[PASS] class: aucune valeur NULL
-
-[PASS] gender: valeurs valides
-[PASS] stageid: valeurs valides
-[PASS] sectionid: valeurs valides
-[PASS] semester: valeurs valides
-[PASS] relation: valeurs valides
-[PASS] parentansweringsurvey: valeurs valides
-[PASS] parentschoolsatisfaction: valeurs valides
-[PASS] studentabsencedays: valeurs valides
-[PASS] class: valeurs valides
-
-[PASS] raisedhands: valeurs dans [0, 100]
-[PASS] visitedresources: valeurs dans [0, 100]
-[PASS] announcementsview: valeurs dans [0, 100]
-[PASS] discussion: valeurs dans [0, 100]
-
-==================================================
-
-RESULT: PASS
-
-Toutes les règles de qualité sont respectées.
-
-==================================================
+============================================================
+        BUSINESS RULE CHECK
+============================================================
+Violations absence_risk : 0
+Violations risk_class  : 0
+Groupes doublons métier: 0
+Statut                  : PASS
+Toutes les règles métier sont respectées.
+============================================================
 ```
+
+Les règles métier appliquées aux données préparées sont donc respectées.
+
+Les doublons métier RAW sont traités séparément par `quality_checks.py`,
+avant la préparation.
 
 ---
 
-## 12. Tests de qualité avec dbt
+# 14. Validation avec dbt
 
-La qualité est également vérifiée après la transformation des données avec
+La qualité des données transformées est également vérifiée avec les tests
 dbt.
-
-Le projet dbt se trouve dans :
-
-```text
-dataops/
-└── dbt/
-    └── university_dropout_dbt/
-```
 
 Les modèles concernés sont :
 
 ```text
-stg_students
-prepared_students
+main.stg_students
+main.prepared_students
 ```
 
-Les tests sont définis dans :
+Le flux de transformation est :
 
 ```text
-models/schema.yml
+raw_data.students_raw
+        │
+        ▼
+main.stg_students
+        │
+        ▼
+main.prepared_students
 ```
 
-Les tests actuellement définis comprennent notamment :
+Les tests dbt permettent notamment de contrôler la non-nullité et les
+valeurs acceptées pour certaines colonnes.
 
-- `not_null` ;
-- `accepted_values`.
+---
 
-Pour exécuter les tests :
+# 15. Résultats des tests dbt
+
+La commande :
 
 ```powershell
-cd dataops\dbt\university_dropout_dbt
+dbt run
+```
+
+a permis de construire les deux modèles avec succès :
+
+```text
+PASS=2
+WARN=0
+ERROR=0
+```
+
+Les tests sont ensuite exécutés avec :
+
+```powershell
 dbt test
 ```
 
-Le dernier résultat obtenu est :
+Résultat :
 
 ```text
 PASS=9
@@ -525,360 +710,69 @@ Les 9 tests dbt ont donc été validés avec succès.
 
 ---
 
-## 13. Transformation et qualité avec dbt
+# 16. Bilan global de la qualité
 
-Le flux dbt est basé sur la dépendance suivante :
+Les principaux résultats obtenus sont :
 
-```text
-raw_data.students_raw
-        │
-        ▼
-   stg_students
-        │
-        ▼
- prepared_students
-```
+| Contrôle | Résultat |
+|---|---:|
+| Lignes RAW | 480 |
+| Colonnes | 19 |
+| Complétude | 100 % |
+| Doublons exacts | 0 |
+| `_dlt_id` dupliqués | 0 |
+| Lignes impliquées dans des doublons métier RAW | 4 |
+| Groupes de doublons métier RAW | 2 |
+| Lignes PREPARED | 478 |
+| Violations `absence_risk` | 0 |
+| Violations `risk_class` | 0 |
+| Tests dbt | 9/9 PASS |
+| Statut Data Quality RAW | **PASS_WITH_WARNINGS** |
 
-### `stg_students`
-
-Le modèle `stg_students` récupère les données depuis la source déclarée
-dans :
-
-```text
-models/sources.yml
-```
-
-La source est :
-
-```text
-raw_data.students_raw
-```
-
-### `prepared_students`
-
-Le modèle `prepared_students` utilise :
-
-```text
-{{ ref('stg_students') }}
-```
-
-Il prépare les données pour les étapes suivantes.
-
-Une transformation importante concerne :
-
-```text
-studentabsencedays
-```
-
-qui est transformée en :
-
-```text
-absence_risk
-```
-
-avec :
-
-```text
-Under-7  → 0
-Above-7  → 1
-```
-
-La variable `class` est également utilisée pour créer :
-
-```text
-risk_class
-```
-
-Ces nouvelles variables sont ensuite contrôlées par les tests dbt.
+Le statut `PASS_WITH_WARNINGS` est attendu et documente précisément les
+deux groupes de doublons métier détectés dans les données RAW.
 
 ---
 
-## 14. Data Contract
+# 17. Commandes d'exécution
 
-Le fichier :
-
-```text
-data_contract.yaml
-```
-
-représente le contrat de données du projet.
-
-Il permet de formaliser les attentes concernant les données avant leur
-utilisation dans les étapes suivantes.
-
-Le Data Contract peut notamment définir :
-
-```text
-- colonnes obligatoires
-- valeurs autorisées
-- contraintes de complétude
-- contraintes d'unicité
-- plages numériques
-- règles métier
-```
-
-Le Data Contract permet ainsi de transformer les attentes de qualité en
-règles documentées et vérifiables.
-
----
-
-## 15. Position de la Data Quality dans l'architecture
-
-La Data Quality se situe après l'ingestion et avant les étapes suivantes
-du pipeline.
-
-```text
-┌──────────────────────────────┐
-│ xAPI-Edu-Data.csv            │
-└──────────────┬───────────────┘
-               │
-               ▼
-┌──────────────────────────────┐
-│ DLT                          │
-│ Ingestion                    │
-└──────────────┬───────────────┘
-               │
-               ▼
-┌──────────────────────────────┐
-│ DuckDB                       │
-│ raw_data.students_raw        │
-└──────────────┬───────────────┘
-               │
-               ▼
-┌──────────────────────────────┐
-│ Data Quality                 │
-│ Contract + Quality Checks    │
-└──────────────┬───────────────┘
-               │
-               ▼
-┌──────────────────────────────┐
-│ dbt                          │
-│ Transformations              │
-└──────────────┬───────────────┘
-               │
-               ▼
-┌──────────────────────────────┐
-│ prepared_students            │
-└──────────────┬───────────────┘
-               │
-               ▼
-┌──────────────────────────────┐
-│ Dagster                      │
-│ Orchestration                │
-└──────────────┬───────────────┘
-               │
-               ▼
-┌──────────────────────────────┐
-│ Machine Learning             │
-└──────────────┬───────────────┘
-               │
-               ▼
-┌──────────────────────────────┐
-│ MLflow                       │
-│ Tracking + Model Registry    │
-└──────────────┬───────────────┘
-               │
-               ▼
-┌──────────────────────────────┐
-│ FastAPI                      │
-│ Model API                    │
-└──────────────────────────────┘
-```
-
----
-
-## 16. Rôle de Dagster
-
-Dagster constitue la couche d'orchestration du pipeline.
-
-Son rôle est de coordonner les différentes étapes et leurs dépendances.
-
-Le pipeline prévu est :
-
-```text
-DLT
- ↓
-Data Quality
- ↓
-dbt
- ↓
-Machine Learning
- ↓
-MLflow
- ↓
-FastAPI
-```
-
-Dagster permettra notamment de :
-
-- définir les dépendances entre les étapes ;
-- contrôler l'ordre d'exécution ;
-- automatiser les traitements ;
-- suivre l'exécution du pipeline ;
-- faciliter la reproductibilité des traitements.
-
-Dagster orchestre les composants existants. Il ne remplace pas les outils
-spécialisés comme DLT, dbt ou MLflow.
-
----
-
-## 17. Machine Learning
-
-Après la validation et la préparation des données, les données produites
-par dbt seront utilisées pour le Machine Learning.
-
-Le code ML est situé dans :
-
-```text
-ml/
-```
-
-Le flux sera :
-
-```text
-prepared_students
-        │
-        ▼
-Machine Learning
-        │
-        ▼
-     MLflow
-```
-
----
-
-## 18. MLflow
-
-MLflow sera utilisé pour assurer le suivi des expériences et la gestion
-des modèles.
-
-Il permettra notamment de suivre :
-
-- les paramètres des modèles ;
-- les métriques ;
-- les artefacts ;
-- les différentes expériences ;
-- les versions des modèles.
-
-Le flux prévu est :
-
-```text
-Machine Learning
-        │
-        ▼
-      MLflow
-        │
-        ▼
- Model Registry
-```
-
----
-
-## 19. FastAPI
-
-Après l'entraînement et la validation du modèle, celui-ci sera exposé via
-FastAPI.
-
-Le code de l'API est prévu dans :
-
-```text
-api/
-```
-
-Le flux final sera :
-
-```text
-Machine Learning
-        │
-        ▼
-      MLflow
-        │
-        ▼
-Modèle enregistré
-        │
-        ▼
-      FastAPI
-```
-
----
-
-## 20. Reproductibilité
-
-Le fichier DuckDB généré localement n'est pas versionné dans Git.
-
-Il est exclu grâce au `.gitignore`.
-
-La base peut être reconstruite à partir du dataset et du code d'ingestion :
-
-```text
-xAPI-Edu-Data.csv
-        │
-        ▼
-dataops/dlt/ingest_data.py
-        │
-        ▼
-student_pipeline.duckdb
-        │
-        ▼
-raw_data.students_raw
-```
-
-Les éléments importants du pipeline sont versionnés dans Git :
-
-- code d'ingestion DLT ;
-- règles Data Quality ;
-- Data Contract ;
-- modèles dbt ;
-- tests dbt ;
-- code d'orchestration ;
-- code Machine Learning ;
-- configuration MLflow ;
-- code FastAPI.
-
-Cette organisation permet aux membres de l'équipe de reconstruire
-l'environnement de traitement à partir des éléments versionnés.
-
----
-
-## 21. Commandes principales
-
-### Recréer la base DuckDB
+## Contrôle Data Quality RAW
 
 Depuis la racine du projet :
 
 ```powershell
-py dataops\dlt\ingest_data.py
+python data_quality\quality_checks.py
 ```
 
-### Vérifier la base
+Cette commande permet de générer le rapport de qualité sur les données RAW.
+
+---
+
+## Contrôle des règles métier
 
 ```powershell
-py dataops\dlt\check_db.py
+python data_quality\check_business_rule.py
 ```
 
-### Exécuter les contrôles Data Quality
+Cette commande vérifie les règles métier appliquées aux données préparées.
 
-```powershell
-py data_quality\quality_checks.py
+---
+
+## Exécution dbt
+
+Depuis :
+
+```text
+dataops/dbt/university_dropout_dbt/
 ```
 
-### Exécuter dbt
-
-Se placer dans le projet dbt :
-
-```powershell
-cd dataops\dbt\university_dropout_dbt
-```
-
-Puis :
-
-```powershell
-dbt debug
-```
+Exécuter :
 
 ```powershell
 dbt run
 ```
+
+Puis :
 
 ```powershell
 dbt test
@@ -886,101 +780,145 @@ dbt test
 
 ---
 
-## 22. Résultats actuels
+# 18. Reproductibilité
 
-À l'état actuel du projet :
+La base DuckDB est générée localement à partir des données sources et du
+code d'ingestion.
 
-### Ingestion
+Elle n'est pas nécessairement versionnée dans Git.
 
-```text
-480 lignes ingérées
-```
-
-### Identifiants
-
-```text
-480 _dlt_id
-480 identifiants distincts
-```
-
-### Data Quality
-
-```text
-RESULT: PASS
-```
-
-### dbt
-
-```text
-2 modèles exécutés avec succès
-```
-
-### Tests dbt
-
-```text
-9 tests
-9 PASS
-0 WARN
-0 ERROR
-```
-
-Les contrôles actuels indiquent donc que les données respectent les règles
-de qualité définies.
-
----
-
-## 23. Évolutions prévues
-
-Le module Data Quality pourra être enrichi progressivement avec :
-
-- davantage de règles dans le Data Contract ;
-- des contrôles statistiques ;
-- des contrôles de distribution ;
-- des contrôles de valeurs aberrantes ;
-- des contrôles de fraîcheur des données ;
-- l'intégration des contrôles dans Dagster ;
-- l'intégration des contrôles dans la CI/CD ;
-- la génération automatique de rapports de qualité.
-
----
-
-## 24. Résumé
-
-Le module `data_quality` joue un rôle central dans le pipeline
-**University Dropout Prediction**.
-
-Il permet de :
-
-1. définir les règles de qualité avec le Data Contract ;
-2. vérifier les données brutes avec `quality_checks.py` ;
-3. contrôler les données transformées avec les tests dbt ;
-4. documenter le parcours des données avec `lineage.md` ;
-5. préparer une base fiable pour l'orchestration et le Machine Learning.
-
-La chaîne de traitement complète est :
+La reconstruction suit le principe :
 
 ```text
 xAPI-Edu-Data.csv
-        ↓
-       DLT
-        ↓
-     DuckDB
-        ↓
-Data Quality
-        ↓
-       dbt
-        ↓
-prepared_students
-        ↓
-     Dagster
-        ↓
-Machine Learning
-        ↓
-     MLflow
-        ↓
-    FastAPI
+        │
+        ▼
+ingest_data.py
+        │
+        ▼
+DuckDB
+        │
+        ▼
+raw_data.students_raw
+        │
+        ▼
+quality_checks.py
 ```
 
-La Data Quality constitue ainsi une étape essentielle pour garantir la
-fiabilité, la cohérence, la traçabilité et la reproductibilité des données
-utilisées par le système de prédiction.
+Les règles de qualité, le Data Contract, les règles métier, les modèles dbt
+et la documentation du lineage sont versionnés avec le projet.
+
+Cela permet de reproduire les contrôles de qualité à partir des mêmes
+sources et règles.
+
+---
+
+# 19. Lineage et traçabilité
+
+Le fichier `lineage.md` permet de documenter la provenance des données et
+leur évolution au cours du pipeline.
+
+Le lineage principal est :
+
+```text
+xAPI-Edu-Data.csv
+        │
+        ▼
+       DLT
+        │
+        ▼
+raw_data.students_raw
+        │
+        ▼
+Data Quality RAW
+        │
+        ▼
+stg_students
+        │
+        ▼
+prepared_students
+        │
+        ▼
+Data Quality PREPARED
+        │
+        ▼
+Règles métier
+        │
+        ▼
+Machine Learning
+```
+
+Cette traçabilité permet notamment de savoir :
+
+* d'où proviennent les données ;
+* quelles transformations leur sont appliquées ;
+* où les contrôles de qualité sont effectués ;
+* quelles données sont transmises au Machine Learning.
+
+---
+
+# 20. Rôle du module Data Quality dans le projet
+
+Le module `data_quality` constitue une couche de contrôle entre les données
+issues de l'ingestion et leur utilisation dans les étapes suivantes.
+
+Il repose sur quatre composants principaux :
+
+```text
+data_contract.yaml
+        │
+        ▼
+quality_checks.py
+        │
+        ├── Qualité RAW
+        └── Qualité PREPARED
+
+check_business_rule.py
+        │
+        ▼
+Cohérence métier
+
+lineage.md
+        │
+        ▼
+Traçabilité des données
+```
+
+Cette organisation permet de séparer :
+
+* les **contraintes attendues** avec le Data Contract ;
+* les **contrôles techniques** avec `quality_checks.py` ;
+* les **contrôles métier** avec `check_business_rule.py` ;
+* la **traçabilité** avec `lineage.md`.
+
+---
+
+# 21. Conclusion
+
+La démarche Data Quality mise en place permet de sécuriser les données avant
+leur utilisation par le Machine Learning.
+
+Les contrôles réalisés montrent que :
+
+* les données RAW contiennent 480 lignes ;
+* la complétude est de 100 % ;
+* aucun doublon exact n'a été détecté ;
+* aucun `_dlt_id` n'est dupliqué ;
+* deux groupes de doublons métier ont été identifiés ;
+* ces doublons représentent 4 lignes ;
+* la préparation produit 478 lignes ;
+* les règles `absence_risk` et `risk_class` sont respectées ;
+* les 9 tests dbt sont validés.
+
+Le résultat final est donc :
+
+```text
+Data Quality RAW : PASS_WITH_WARNINGS
+Business Rules   : PASS
+dbt tests        : 9/9 PASS
+```
+
+La présence du statut `PASS_WITH_WARNINGS` permet de conserver la
+transparence sur les anomalies détectées dans les données sources, tandis
+que la déduplication permet de fournir des données préparées adaptées aux
+étapes suivantes du projet.
