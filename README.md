@@ -885,7 +885,11 @@ Le projet a pour objectif pédagogique de mettre en pratique les principes de :
 - Cloud
 - Collaboration Git/GitHub
 - Gestion Agile
+<<<<<<< HEAD
 
+=======
+ 📝 Bonnes pratiques
+>>>>>>> 8ab946686695dd503e4ac42087b1ae4d10bf3adf
 # 📝 Bonnes pratiques
 
 ✔️ Toujours travailler sur sa branche.
@@ -907,6 +911,7 @@ Le projet a pour objectif pédagogique de mettre en pratique les principes de :
 ❌ Ne jamais modifier les fichiers hors de sa responsabilité sans concertation.
 
 ---
+📜 Licence
 
 # 📜 Licence
 
