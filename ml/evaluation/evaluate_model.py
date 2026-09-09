@@ -17,12 +17,7 @@ root_dir = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "../../")
 )
 
-data_path = os.path.join(
-    root_dir,
-    "data",
-    "raw",
-    "xAPI-Edu-Data.csv"
-)
+
 
 model_path = os.path.join(
     root_dir,
@@ -37,13 +32,21 @@ feature_path = os.path.join(
     "models",
     "feature_names.pkl"
 )
-
-# Ajouter le dossier ml au PYTHONPATH
-sys.path.append(
-    os.path.join(root_dir, "ml")
+scaler_path = os.path.join(
+    root_dir,
+    "ml",
+    "models",
+    "scaler.pkl"
 )
 
-from preprocessing.preprocess import load_and_preprocess
+# Ajouter le dossier ml au PYTHONPATH
+test_path = os.path.join(
+    root_dir,
+    "data",
+    "processed",
+    "test_data.csv"
+)
+
 
 
 def evaluate():
@@ -67,9 +70,10 @@ def evaluate():
 
     # On récupère les trois ensembles mais on utilise
     # uniquement le jeu de TEST pour l'évaluation finale.
-    _, _, X_test, _, _, y_test, _ = load_and_preprocess(
-        data_path
-    )
+    test_df = pd.read_csv(test_path)
+
+    X_test = test_df.drop(columns=["Target"])
+    y_test = test_df["Target"]
 
     # ========================================================
     # Chargement du modèle
@@ -77,11 +81,12 @@ def evaluate():
 
     model = joblib.load(model_path)
     feature_names = joblib.load(feature_path)
+    scaler = joblib.load(scaler_path)
 
     # ========================================================
     # Prédictions
     # ========================================================
-
+    X_test = scaler.transform(X_test)
     y_pred = model.predict(X_test)
 
     # ========================================================

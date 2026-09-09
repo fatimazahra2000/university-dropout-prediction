@@ -30,7 +30,7 @@ from dagster import AssetExecutionContext, Failure, MetadataValue, Output, asset
 from sklearn.metrics import accuracy_score, f1_score
 
 from dataops.dagster.assets import data_quality_report
-from dataops.dagster.resources import MLflowResource
+from dataops.dagster.resources import DuckDBResource, MLflowResource
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -57,16 +57,22 @@ def _load_split(csv_path: Path):
         "Depend du rapport qualite afin que le ML s'execute apres le pipeline data."
     ),
 )
-def ml_training_dataset(context: AssetExecutionContext) -> Output[dict]:
+def ml_training_dataset(
+    context: AssetExecutionContext,
+    duckdb: DuckDBResource,
+) -> Output[dict]:
     from ml.preprocessing.preprocess import load_and_preprocess
 
-    if not RAW_DATA_PATH.exists():
-        raise Failure(description=f"Dataset ML introuvable: {RAW_DATA_PATH}")
-
-    context.log.info(f"Preprocessing du dataset: {RAW_DATA_PATH}")
-    X_train, X_val, X_test, y_train, y_val, y_test, feature_names = load_and_preprocess(
-        str(RAW_DATA_PATH)
-    )
+    with duckdb.get_connection() as conn:
+       prepared_df = conn.execute(
+        "SELECT * FROM main.prepared_students"
+    ).fetchdf()
+    context.log.info(f"Nombre de lignes prepared_students : {len(prepared_df)}")
+    context.log.info(f"Colonnes : {list(prepared_df.columns)}")
+    context.log.info(f"Premières lignes :\n{prepared_df.head()}")
+    
+    X_train, X_val, X_test, y_train, y_val, y_test, feature_names = (
+    load_and_preprocess(prepared_df))
 
     result = {
         "train_csv": str(PROCESSED_DIR / "train_data.csv"),
@@ -126,7 +132,10 @@ def trained_model(
         ) from exc
 
     context.log.info("Entrainement des modeles candidats...")
-    train_best_model()
+    train_best_model(
+    ml_training_dataset["train_csv"],
+    ml_training_dataset["val_csv"],
+)
 
     model_path = MODEL_DIR / "best_model.pkl"
     scaler_path = MODEL_DIR / "scaler.pkl"
