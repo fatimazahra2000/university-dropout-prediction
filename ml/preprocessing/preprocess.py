@@ -4,26 +4,37 @@ import joblib
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
-def load_and_preprocess(file_path):
-    if not os.path.exists(file_path):
-        raise FileNotFoundError(f"ERREUR : Fichier introuvable à : {file_path}")
-
-    df = pd.read_csv(file_path)
-    df = df.ffill() # Compatibilité Pandas 3.0+
-
+def load_and_preprocess(df):
+    
+    
+    print("PREPROCESSING DEPUIS prepared_students")
+    print(df.head())
+    print(df.columns.tolist())
+    
+    df = df.copy()
     # Encodage de la cible
     target_map = {'L': 0, 'M': 1, 'H': 2}
-    df['Class'] = df['Class'].map(target_map)
+    df['class'] = df['class'].map(target_map)
 
     # Encodage One-Hot des variables catégorielles
-    categorical_cols = ['gender', 'NationalITy', 'PlaceofBirth', 'StageID', 
-                        'GradeID', 'SectionID', 'Topic', 'Semester', 
-                        'Relation', 'ParentAnsweringSurvey', 
-                        'ParentschoolSatisfaction', 'StudentAbsenceDays']
+    categorical_cols = [
+    'gender',
+    'nationality',
+    'placeofbirth',
+    'stageid',
+    'gradeid',
+    'sectionid',
+    'topic',
+    'semester',
+    'relation',
+    'parentansweringsurvey',
+    'parentschoolsatisfaction',
+    'studentabsencedays'
+]
     df_final = pd.get_dummies(df, columns=categorical_cols, drop_first=True)
 
-    X = df_final.drop('Class', axis=1)
-    y = df_final['Class']
+    X = df_final.drop(['class', 'risk_class'], axis=1)
+    y = df_final['class']
 
     # --- SÉPARATION EN 3 SETS (TRAIN 70%, VAL 15%, TEST 15%) ---
     # 1. On sépare le Train (70%) et le Reste (30%)
