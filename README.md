@@ -755,7 +755,7 @@ Exemple :
 DATA_DIR=data
 DUCKDB_PATH=data/university_dropout.duckdb
 
-MLFLOW_TRACKING_URI=http://localhost:5000
+MLFLOW_TRACKING_URI=http://localhost:5001
 
 API_HOST=0.0.0.0
 API_PORT=8000

@@ -36,7 +36,7 @@ avec versionnement automatique (v1, v2, ...) à chaque nouvel enregistrement
    \`\`\`bash
    python mlflow/log_to_mlflow.py
    \`\`\`
-3. Consulter les résultats sur http://localhost:5000
+3. Consulter les résultats sur http://localhost:5001
 
 ## Dépendance importante
 
