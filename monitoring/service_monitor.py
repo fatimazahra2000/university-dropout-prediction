@@ -1,7 +1,7 @@
 import mlflow
 import matplotlib.pyplot as plt
 
-mlflow.set_tracking_uri("http://localhost:5000")
+mlflow.set_tracking_uri("http://localhost:5001")
 
 # Récupérer tous les runs de monitoring loggés jusqu'ici
 experiment = mlflow.get_experiment_by_name("university-dropout-prediction")

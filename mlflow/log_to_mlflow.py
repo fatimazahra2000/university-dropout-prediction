@@ -4,7 +4,7 @@ import mlflow
 import mlflow.sklearn
 
 # 1. Dire à MLflow où enregistrer
-mlflow.set_tracking_uri("http://localhost:5000")
+mlflow.set_tracking_uri("http://localhost:5001")
 mlflow.set_experiment("university-dropout-prediction")
 
 # 2. Charger le modèle et les fichiers déjà produits par Hasnaa

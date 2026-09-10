@@ -4,7 +4,7 @@ import mlflow.sklearn
 import joblib
 from sklearn.metrics import accuracy_score, f1_score
 
-mlflow.set_tracking_uri("http://localhost:5000")
+mlflow.set_tracking_uri("http://localhost:5001")
 mlflow.set_experiment("university-dropout-prediction")
 
 # Modèle chargé depuis le Registry (pas depuis le .pkl directement)
