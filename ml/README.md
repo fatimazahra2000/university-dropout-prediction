@@ -6,7 +6,6 @@ L'objectif est de construire un modèle de **classification du niveau de risque*
 
 Le module ML couvre la préparation des données, le prétraitement, la séparation des jeux de données, l'entraînement de plusieurs modèles, la sélection du meilleur modèle, l'évaluation finale et la sauvegarde des artefacts nécessaires à la reproductibilité.
 
----
 
 ## 🎯 Objectifs
 
@@ -28,7 +27,6 @@ Le pipeline ML permet de :
 * Sauvegarder les noms des variables utilisées
 * Conserver les éléments nécessaires à la reproductibilité et au déploiement
 
----
 
 # 📊 Dataset
 
@@ -73,7 +71,6 @@ Après le prétraitement et la séparation, le fichier `train_data.csv` contient
 
 Le prétraitement transforme notamment les variables catégorielles en variables numériques à l'aide du **One-Hot Encoding**.
 
----
 
 # 🏗️ Architecture du module ML
 
@@ -102,7 +99,6 @@ ml/
 └── README.md
 ```
 
----
 
 # 🔄 Pipeline Machine Learning
 
@@ -158,7 +154,6 @@ preprocess.py
             Accuracy       F1-score      Confusion Matrix
 ```
 
----
 
 # 📁 Description des fichiers
 
@@ -257,7 +252,6 @@ Chaque fichier contient les features transformées ainsi qu'une colonne :
 Target
 ```
 
----
 
 # 🔍 Analyse exploratoire des données — EDA
 
@@ -299,7 +293,6 @@ df["class"].value_counts()
 
 L'EDA est principalement utilisée pour comprendre la structure et la qualité des données avant leur utilisation dans le modèle.
 
----
 
 # ✂️ Séparation des données
 
@@ -351,7 +344,6 @@ train_test_split(
 )
 ```
 
----
 
 # 🤖 Modèles entraînés
 
@@ -389,7 +381,6 @@ Les modèles sont entraînés sur le jeu **Train** et comparés sur le jeu **Val
 
 Le jeu de Test n'intervient pas dans la sélection du meilleur modèle.
 
----
 
 # 📈 Évaluation des modèles
 
@@ -425,7 +416,6 @@ RESULTAT : Meilleur modèle 'Random_Forest' sauvegardé avec 0.82 sur Val.
 
 Dans cet exemple, **Random Forest** est sélectionné comme meilleur modèle.
 
----
 
 # 🏆 Sélection du meilleur modèle
 
@@ -446,7 +436,6 @@ if val_acc > best_acc:
 
 Cette méthode garantit que le jeu de test reste indépendant de la sélection du modèle.
 
----
 
 # 🧪 Évaluation finale sur le Test Set
 
@@ -491,7 +480,6 @@ y_pred = model.predict(X_test)
 
 Cette étape permet d'obtenir une estimation des performances du modèle sur des données qui n'ont pas été utilisées pendant son entraînement ou sa sélection.
 
----
 
 # 📊 Métriques d'évaluation
 
@@ -530,7 +518,6 @@ classification_report(
 )
 ```
 
----
 
 # 📊 Matrice de confusion
 
@@ -570,7 +557,6 @@ ml/evaluation/confusion_matrix.png
 
 Cette visualisation permet notamment d'identifier les classes qui sont le plus souvent confondues par le modèle.
 
----
 
 # 🔎 Analyse des facteurs prédictifs
 
@@ -595,7 +581,6 @@ Cette analyse permet d'identifier les caractéristiques qui contribuent le plus 
 
 > ⚠️ Une importance élevée ne signifie pas qu'une variable est une cause directe du décrochage. Elle indique uniquement qu'elle contribue fortement aux prédictions du modèle.
 
----
 
 # 💾 Sauvegarde du modèle
 
@@ -622,8 +607,6 @@ model = joblib.load(
 )
 ```
 
----
-
 # ⚙️ Sauvegarde du scaler
 
 Le scaler utilisé pour la normalisation est sauvegardé afin d'appliquer exactement la même transformation lors de l'évaluation ou du déploiement.
@@ -647,7 +630,6 @@ scaler.transform(X_test)
 
 Ainsi, la même transformation est conservée entre l'entraînement et l'évaluation.
 
----
 
 # 🧾 Sauvegarde des noms des variables
 
@@ -668,7 +650,6 @@ joblib.dump(
 
 Cela permet de conserver la correspondance entre les données transformées et les variables attendues par le modèle.
 
----
 
 # 🔢 Versionnement des métadonnées
 
@@ -698,7 +679,6 @@ Le versionnement permet de conserver une trace :
 * des performances obtenues ;
 * de la date d'entraînement.
 
----
 
 # 🔁 Reproductibilité
 
@@ -718,7 +698,6 @@ random_state=42
 
 Cette configuration permet de reproduire le même découpage et les mêmes résultats dans les mêmes conditions d'exécution.
 
----
 
 # 🔐 Prévention des fuites de données
 
@@ -755,7 +734,6 @@ Target
 
 Ainsi, le modèle ne reçoit pas directement une copie de la réponse attendue parmi ses variables d'entrée.
 
----
 
 # 📦 Bibliothèques utilisées
 
@@ -777,7 +755,6 @@ Installation :
 pip install pandas numpy scikit-learn xgboost matplotlib seaborn joblib
 ```
 
----
 
 # ▶️ Exécution de la partie ML
 
@@ -812,7 +789,6 @@ L'évaluation finale peut ensuite être exécutée avec :
 python ml/evaluation/evaluate_model.py
 ```
 
----
 
 # 🧩 Intégration avec Dagster
 
@@ -872,7 +848,6 @@ Le modèle est donc entraîné à partir des données ML préparées et non dire
 
 Cet asset utilise les résultats obtenus sur le Test Set et applique un seuil de qualité avant une éventuelle promotion du modèle dans le Model Registry MLflow.
 
----
 
 # 📂 Artefacts produits
 
@@ -926,7 +901,6 @@ Contient les métadonnées et informations de version du modèle.
 
 Contient la matrice de confusion du modèle final.
 
----
 
 # 👥 Contribution à la partie Machine Learning
 
@@ -959,7 +933,6 @@ Contribution à la partie ML à travers :
 
 Les contributions sont complémentaires et intégrées au dépôt via Git et Pull Requests.
 
----
 
 # 🚀 Résultat attendu
 
