@@ -755,7 +755,7 @@ Exemple :
 DATA_DIR=data
 DUCKDB_PATH=data/university_dropout.duckdb
 
-MLFLOW_TRACKING_URI=http://localhost:5000
+MLFLOW_TRACKING_URI=http://localhost:5001
 
 API_HOST=0.0.0.0
 API_PORT=8000
@@ -885,7 +885,11 @@ Le projet a pour objectif pédagogique de mettre en pratique les principes de :
 - Cloud
 - Collaboration Git/GitHub
 - Gestion Agile
+<<<<<<< HEAD
 
+=======
+ 📝 Bonnes pratiques
+>>>>>>> 8ab946686695dd503e4ac42087b1ae4d10bf3adf
 # 📝 Bonnes pratiques
 
 ✔️ Toujours travailler sur sa branche.
@@ -907,6 +911,7 @@ Le projet a pour objectif pédagogique de mettre en pratique les principes de :
 ❌ Ne jamais modifier les fichiers hors de sa responsabilité sans concertation.
 
 ---
+📜 Licence
 
 # 📜 Licence
 
