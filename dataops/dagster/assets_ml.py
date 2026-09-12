@@ -235,7 +235,7 @@ def trained_model(
         # client MLflow plus recent parle au serveur 2.14.1 du projet.
         with tempfile.TemporaryDirectory(prefix="dagster-mlflow-model-") as tmp_dir:
             saved_model_dir = Path(tmp_dir) / "model"
-            mlflow.sklearn.save_model(model, path=str(saved_model_dir))
+            mlflow.sklearn.save_model(model, path=str(saved_model_dir), serialization_format="cloudpickle",)
             mlflow.log_artifacts(str(saved_model_dir), artifact_path="model")
 
         run_id = run.info.run_id
