@@ -18,8 +18,6 @@ FEATURES_PATH = os.path.join(ROOT_DIR, "ml", "models", "feature_names.pkl")
 model = joblib.load(MODEL_PATH)
 scaler = joblib.load(SCALER_PATH)
 
-# Prefer the feature names stored by scikit-learn in the fitted scaler.
-# This avoids loading an old pandas Index pickle created by another pandas version.
 if hasattr(scaler, "feature_names_in_"):
     feature_names = list(scaler.feature_names_in_)
 else:
@@ -28,25 +26,54 @@ else:
 RISK_LABELS = {0: "Low Risk", 1: "Medium Risk", 2: "High Risk"}
 CLASS_LETTERS = {0: "L", 1: "M", 2: "H"}
 
+# Le pipeline DataOps (dbt) utilise desormais des noms de colonnes
+# en minuscules : on les fait correspondre a ceux recus depuis l'API
+RENAME_MAP = {
+    "NationalITy": "nationality",
+    "PlaceofBirth": "placeofbirth",
+    "StageID": "stageid",
+    "GradeID": "gradeid",
+    "SectionID": "sectionid",
+    "Topic": "topic",
+    "Semester": "semester",
+    "Relation": "relation",
+    "ParentAnsweringSurvey": "parentansweringsurvey",
+    "ParentschoolSatisfaction": "parentschoolsatisfaction",
+    "StudentAbsenceDays": "studentabsencedays",
+    "VisITedResources": "visitedresources",
+    "AnnouncementsView": "announcementsview",
+    "Discussion": "discussion",
+}
+
 CATEGORICAL_COLS = [
-    "gender", "NationalITy", "PlaceofBirth", "StageID",
-    "GradeID", "SectionID", "Topic", "Semester",
-    "Relation", "ParentAnsweringSurvey",
-    "ParentschoolSatisfaction", "StudentAbsenceDays"
+    "gender", "nationality", "placeofbirth", "stageid",
+    "gradeid", "sectionid", "topic", "semester",
+    "relation", "parentansweringsurvey",
+    "parentschoolsatisfaction", "studentabsencedays"
 ]
 
 
 def preprocess_input(data: StudentData) -> pd.DataFrame:
-    df = pd.DataFrame([data.dict()])
+    df = pd.DataFrame([data.dict()]).rename(columns=RENAME_MAP)
 
-    # Même one-hot encoding que lors de l'entraînement
-    df_encoded = pd.get_dummies(df, columns=CATEGORICAL_COLS, drop_first=True)
+    # Nouvelle variable engineered ajoutee par le pipeline dbt (prepared_students.sql)
+    df["absence_risk"] = (df["studentabsencedays"] == "Above-7").astype(int)
 
-    # Aligner exactement sur les colonnes vues à l'entraînement
-    # (colonnes manquantes -> 0, colonnes en trop -> supprimées)
-    df_aligned = df_encoded.reindex(columns=feature_names, fill_value=0)
+    # Construction directe du vecteur final (plus fiable que pd.get_dummies
+    # pour une seule requete, qui ne genere aucune colonne one-hot
+    # quand une seule valeur par variable categorielle est presente)
+    result = pd.DataFrame(0, index=[0], columns=feature_names)
 
-    return df_aligned
+    for col in feature_names:
+        if col in df.columns:
+            result[col] = df[col].values
+
+    for col in CATEGORICAL_COLS:
+        dummy_col = f"{col}_{df[col].iloc[0]}"
+        if dummy_col in result.columns:
+            result[dummy_col] = 1
+
+    return result
 
 
 @router.get("/health")
