@@ -2057,14 +2057,6 @@ L'application a été conteneurisée avec Docker et déployée dans un environne
 
 Le cœur fonctionnel du projet est terminé.
 
-Deux opérations de finalisation restent identifiées côté infrastructure/repository :
-
-1. configurer `API_URL` dans les variables GitHub Actions avec l'URL de production afin que le workflow de monitoring cible directement l'API Cloud ;
-2. finaliser le passage de la configuration Komodo de `develop` vers `main` après validation par l'équipe.
-
-Ces points concernent la finalisation de l'automatisation et de la configuration du dépôt, et non le développement du système principal.
-
-
 # 📝 48. Bonnes pratiques suivies
 
 ✔️ Développement sur des branches dédiées.
