@@ -1,757 +1,1874 @@
 # 🎓 University Dropout Prediction — MLOps & DataOps
 
-## 📖 Description
+> **Projet terminé et fonctionnel ✅**
+> Système complet de prédiction du risque de décrochage universitaire, industrialisé selon une approche **DataOps + Machine Learning + MLOps + DevOps**.
 
-Ce projet est réalisé dans le cadre du module **MLOps & DataOps**.
 
-L'objectif est de développer un système intelligent permettant de **prédire le risque de décrochage universitaire** à partir des caractéristiques académiques, comportementales et démographiques des étudiants.
+## 📖 Description du projet
 
-Le projet utilise le dataset **xAPI-Edu-Data**, disponible sur Kaggle.
+Ce projet a été réalisé dans le cadre du module **MLOps & DataOps**.
 
-Le système vise à mettre en place une chaîne complète **DataOps / MLOps**, depuis l'ingestion et la transformation des données jusqu'à l'entraînement, au versionnement, au déploiement et au monitoring du modèle.
+L'objectif est de construire un système intelligent capable de **prédire le niveau de risque de décrochage universitaire** d'un étudiant à partir de ses caractéristiques :
 
-Le projet couvre notamment :
+* académiques ;
+* comportementales ;
+* démographiques.
 
-- 📥 Ingestion automatisée avec **dlt**
-- 🗄️ Stockage local avec **DuckDB**
-- 🔄 Transformation avec **dbt**
-- ⚙️ Orchestration avec **Dagster**
-- ✅ Qualité des données et Data Contracts
-- 🔗 Data Lineage
-- 🤖 Machine Learning avec Scikit-Learn
-- 📊 Experiment Tracking avec **MLflow**
-- 📦 Versionnement du modèle
-- 🚀 API REST avec **FastAPI**
-- 🐳 Conteneurisation avec **Docker**
-- ⚙️ CI/CD avec **GitHub Actions**
-- ☁️ Déploiement Cloud
-- 📈 Monitoring et observabilité
+Le système classe chaque étudiant dans l'une des trois catégories suivantes :
 
-> ⚠️ **État actuel :** le projet est en phase de démarrage. Les différents composants seront développés progressivement selon les sprints Agile.
+| Classe | Signification              |
+| ------ | -------------------------- |
+| `L`    | Low Risk — faible risque   |
+| `M`    | Medium Risk — risque moyen |
+| `H`    | High Risk — risque élevé   |
 
-# 🛠️ Stack technique
+Le projet utilise le dataset **xAPI-Edu-Data**, contenant **480 observations et 17 variables**.
 
-| Domaine | Technologie |
-|---|---|
-| Dataset | xAPI-Edu-Data |
-| Langage | Python |
-| Data Ingestion | dlt |
-| Stockage | DuckDB |
-| Transformation | dbt |
-| Orchestration | Dagster |
-| Data Quality | Tests automatisés + Data Contracts |
-| Data Lineage | dbt / documentation |
-| Machine Learning | Scikit-Learn |
-| Experiment Tracking | MLflow |
-| Model Registry | MLflow Model Registry |
-| API | FastAPI |
-| Conteneurisation | Docker |
-| CI/CD | GitHub Actions |
-| Cloud | Komodo / environnement Cloud à définir |
-| Versionnement | Git + GitHub |
-| Gestion Agile | Jira |
+L'objectif ne se limite pas à entraîner un modèle de Machine Learning. Le projet met en place une chaîne complète permettant de passer de la donnée brute jusqu'à un service de prédiction déployé :
+
+```text
+Données brutes
+     │
+     ▼
+   dlt
+     │
+     ▼
+  DuckDB
+     │
+     ▼
+   dbt
+     │
+     ▼
+Data Quality
+Data Contract
+Data Lineage
+     │
+     ▼
+ Préparation ML
+     │
+     ▼
+Entraînement
+     │
+     ▼
+  MLflow
+Tracking + Registry
+     │
+     ▼
+  FastAPI
+     │
+     ▼
+   Docker
+     │
+     ▼
+  Komodo
+     │
+     ▼
+Déploiement Cloud
+     │
+     ▼
+ Monitoring
+```
+
+
+
+# ✅ État final du projet
+
+Le projet est **terminé et fonctionnel**.
+
+Les différents composants prévus ont été implémentés et intégrés dans une chaîne cohérente :
+
+| Composant                | Technologie                      | État                   |
+| ------------------------ | -------------------------------- | ---------------------- |
+| 📥 Ingestion des données | dlt                              | ✅ Terminé              |
+| 🗄️ Stockage             | DuckDB                           | ✅ Terminé              |
+| 🔄 Transformation        | dbt                              | ✅ Terminé              |
+| 🧹 Data Quality          | Python + dbt                     | ✅ Terminé              |
+| 📋 Data Contract         | YAML                             | ✅ Terminé              |
+| 🔗 Data Lineage          | Documentation + dbt              | ✅ Terminé              |
+| ⚙️ Orchestration         | Dagster                          | ✅ Terminé              |
+| 🤖 Machine Learning      | Scikit-Learn + XGBoost           | ✅ Terminé              |
+| 📊 Experiment Tracking   | MLflow                           | ✅ Terminé              |
+| 📦 Model Registry        | MLflow                           | ✅ Terminé              |
+| 🔢 Versionnement modèle  | JSON + MLflow                    | ✅ Terminé              |
+| 🚀 API REST              | FastAPI                          | ✅ Terminé              |
+| 🐳 Conteneurisation      | Docker / Docker Compose          | ✅ Terminé              |
+| ⚙️ CI/CD                 | GitHub Actions                   | ✅ Terminé              |
+| ☁️ Déploiement Cloud     | Komodo                           | ✅ Terminé              |
+| 📈 Monitoring ML         | MLflow + scripts Python          | ✅ Terminé              |
+| ❤️ Monitoring API        | Health monitoring                | ✅ Implémenté et validé |
+| 📋 Gestion Agile         | Jira / Scrum                     | ✅ 3 sprints terminés   |
+| 📚 Documentation         | README + documentation technique | ✅ Terminé              |
+
 
 # 🎯 Objectifs du projet
 
-Le projet a pour objectifs de :
+Les objectifs initiaux étaient de construire une chaîne complète de traitement et d'exploitation des données.
 
-1. Collecter automatiquement les données du dataset xAPI-Edu-Data.
-2. Stocker les données brutes dans DuckDB.
-3. Transformer les données avec dbt.
-4. Mettre en place des contrôles de qualité.
-5. Définir des Data Contracts.
-6. Assurer la traçabilité des données avec le Data Lineage.
-7. Préparer les données pour le Machine Learning.
-8. Développer un modèle de classification du risque de décrochage.
-9. Évaluer les performances du modèle.
-10. Versionner les modèles entraînés.
-11. Suivre les expérimentations avec MLflow.
-12. Exposer le modèle via une API FastAPI.
-13. Conteneuriser l'application avec Docker.
-14. Automatiser les tests et le build avec GitHub Actions.
-15. Déployer la solution dans un environnement Cloud.
-16. Mettre en place un monitoring du service et du modèle.
+## Objectifs atteints
 
-# 🏗️ Architecture prévue
-
-```text
-                    xAPI-Edu-Data
-                          │
-                          ▼
-                    ┌───────────┐
-                    │    dlt    │
-                    │ Ingestion │
-                    └─────┬─────┘
-                          │
-                          ▼
-                    ┌───────────┐
-                    │  DuckDB   │
-                    │ Raw Data  │
-                    └─────┬─────┘
-                          │
-                          ▼
-                    ┌───────────┐
-                    │    dbt    │
-                    │Transform. │
-                    └─────┬─────┘
-                          │
-                          ▼
-                ┌─────────────────────┐
-                │ Data Quality         │
-                │ Tests + Contracts    │
-                │ Data Lineage         │
-                └──────────┬──────────┘
-                           │
-                           ▼
-                    ┌─────────────┐
-                    │ Préparation │
-                    │     ML      │
-                    └──────┬──────┘
-                           │
-                           ▼
-                    ┌─────────────┐
-                    │  Scikit-    │
-                    │   Learn     │
-                    │Classification│
-                    └──────┬──────┘
-                           │
-                           ▼
-                     ┌───────────┐
-                     │  MLflow   │
-                     │ Tracking  │
-                     │ Registry  │
-                     └─────┬─────┘
-                           │
-                           ▼
-                     ┌───────────┐
-                     │  FastAPI  │
-                     │ /predict  │
-                     │ /health   │
-                     └─────┬─────┘
-                           │
-                           ▼
-                     ┌───────────┐
-                     │  Docker   │
-                     └─────┬─────┘
-                           │
-                           ▼
-                     ┌───────────┐
-                     │   Cloud   │
-                     │ / Komodo  │
-                     └─────┬─────┘
-                           │
-                           ▼
-                    Monitoring &
-                    Observabilité
+1. ✅ Collecter automatiquement les données avec **dlt**.
+2. ✅ Stocker les données brutes dans **DuckDB**.
+3. ✅ Transformer les données avec **dbt**.
+4. ✅ Contrôler la qualité des données.
+5. ✅ Définir un **Data Contract**.
+6. ✅ Documenter le **Data Lineage**.
+7. ✅ Préparer les données pour le Machine Learning.
+8. ✅ Développer plusieurs modèles de classification.
+9. ✅ Comparer les modèles sur un jeu de validation.
+10. ✅ Sélectionner le meilleur modèle.
+11. ✅ Évaluer le modèle sur un jeu de test indépendant.
+12. ✅ Versionner les modèles.
+13. ✅ Suivre les expériences avec **MLflow**.
+14. ✅ Enregistrer le modèle dans le **Model Registry**.
+15. ✅ Exposer le modèle via une API **FastAPI**.
+16. ✅ Conteneuriser l'application avec **Docker**.
+17. ✅ Mettre en place une pipeline **CI/CD**.
+18. ✅ Déployer l'application dans le Cloud avec **Komodo**.
+19. ✅ Mettre en place le monitoring du modèle.
+20. ✅ Mettre en place le monitoring de la disponibilité de l'API.
 
 
-        ┌─────────────────────────────────────┐
-        │           GitHub Actions             │
-        │  Tests → Vérification → Build Docker │
-        └─────────────────────────────────────┘
-
-                         ▲
-                         │
-                    Git / GitHub
-
----
-
-# 👥 Équipe
-
-| Membre | Responsabilité principale |
-|---|---|
-| **Hajar** | Product Owner + Vision du projet + Dagster |
-| **Fatima** | Scrum Master + GitHub + README + support ML |
-| **Doaa** | Data Engineer — dlt + DuckDB |
-| **Hasna** | Analytics Engineer — dbt + Data Quality |
-| **Yousra** | ML Engineer — Machine Learning |
-| **Wijdane** | MLOps Engineer — MLflow + Monitoring ML |
-| **Hiba** | Deployment Engineer — FastAPI + Docker |
-| **Soukaina** | DevOps Engineer — CI/CD + Monitoring Service + Cloud |
-
-# 🌿 Organisation Git
-
-Le projet utilise une stratégie Git basée sur trois niveaux :
+# 🏗️ Architecture globale
 
 ```text
-main
-  │
-  └── develop
+                         ┌──────────────────────┐
+                         │   xAPI-Edu-Data.csv  │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │         dlt          │
+                         │      Ingestion       │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │       DuckDB         │
+                         │      Raw Data        │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │         dbt          │
+                         │   Transformation     │
+                         │ stg → prepared      │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                 ┌─────────────────────────────────────┐
+                 │         Data Quality                 │
+                 │                                     │
+                 │ • Quality Checks                     │
+                 │ • Data Contract                     │
+                 │ • Business Rules                    │
+                 │ • Data Lineage                      │
+                 └──────────────────┬──────────────────┘
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │   Préprocessing ML   │
+                         │                      │
+                         │ • Encoding           │
+                         │ • Scaling            │
+                         │ • Train / Val / Test │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                 ┌─────────────────────────────────────┐
+                 │       Entraînement ML               │
+                 │                                     │
+                 │ • Logistic Regression               │
+                 │ • Random Forest                     │
+                 │ • XGBoost                           │
+                 └──────────────────┬──────────────────┘
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │       MLflow         │
+                         │                      │
+                         │ • Tracking           │
+                         │ • Metrics             │
+                         │ • Parameters          │
+                         │ • Artifacts           │
+                         │ • Model Registry      │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │       FastAPI        │
+                         │                      │
+                         │ GET  /health         │
+                         │ POST /predict        │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │        Docker        │
+                         │   Docker Compose     │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │       Komodo         │
+                         │    Cloud / GitOps    │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                    ┌──────────────────────────────┐
+                    │         Monitoring           │
+                    │                              │
+                    │ • Model Drift                │
+                    │ • Accuracy / F1              │
+                    │ • API Health                 │
+                    │ • Response Time              │
+                    └──────────────────────────────┘
+
+
+          ┌──────────────────────────────────────────┐
+          │            GitHub Actions                 │
+          │                                          │
+          │ Tests → Docker Build → API → /health    │
+          └──────────────────────────────────────────┘
+
+
+          ┌──────────────────────────────────────────┐
+          │                Dagster                   │
+          │                                          │
+          │ Raw → dbt → Quality → ML → MLflow       │
+          │ → Evaluation → Model Registry           │
+          └──────────────────────────────────────────┘
+```
+
+
+# 🛠️ Stack technique
+
+| Domaine              | Technologie                                 |
+| -------------------- | ------------------------------------------- |
+| Dataset              | xAPI-Edu-Data — Kaggle                      |
+| Langage              | Python 3.11                                 |
+| Ingestion            | dlt                                         |
+| Stockage             | DuckDB                                      |
+| Transformation       | dbt                                         |
+| Orchestration        | Dagster                                     |
+| Data Quality         | Python + dbt                                |
+| Data Contract        | YAML                                        |
+| Data Lineage         | dbt + documentation                         |
+| Machine Learning     | Scikit-Learn                                |
+| Modèles              | Logistic Regression, Random Forest, XGBoost |
+| Experiment Tracking  | MLflow                                      |
+| Model Registry       | MLflow                                      |
+| API                  | FastAPI + Pydantic                          |
+| Conteneurisation     | Docker                                      |
+| Orchestration Docker | Docker Compose                              |
+| CI/CD                | GitHub Actions                              |
+| Cloud                | Komodo                                      |
+| Monitoring ML        | MLflow + Python                             |
+| Monitoring API       | Python + GitHub Actions                     |
+| Versionnement        | Git + GitHub                                |
+| Gestion Agile        | Jira / Scrum                                |
+
+
+# 📊 Dataset
+
+Le projet utilise le dataset :
+
+**xAPI-Edu-Data**
+
+Le dataset contient :
+
+* **480 observations**
+* **17 variables**
+* des informations académiques ;
+* des informations comportementales ;
+* des informations démographiques ;
+* la variable cible `Class`.
+
+La variable cible permet de déterminer le niveau de risque :
+
+```text
+L → Low Risk
+M → Medium Risk
+H → High Risk
+```
+
+Le fichier est stocké dans :
+
+```text
+data/raw/xAPI-Edu-Data.csv
+```
+
+
+# 📥 1. Data Ingestion — dlt
+
+## Objectif
+
+La première étape consiste à récupérer les données brutes et à les charger automatiquement dans DuckDB.
+
+Le composant utilisé est :
+
+```text
+dlt
+```
+
+Pipeline :
+
+```text
+xAPI-Edu-Data.csv
         │
-        ├── feature/hajar-orchestration
-        ├── feature/douaa-ingestion
-        ├── feature/hasna-data-quality
-        ├── feature/yousra-ml
-        ├── feature/wijdane-mlflow
-        ├── feature/hiba-api
-        ├── feature/soukaiana-cicd
-        └── feature/fatima-agile-ml
+        ▼
+       dlt
+        │
+        ▼
+     DuckDB
+```
 
-## 📌 Règles Git
+Le script principal est :
 
-### `main`
+```text
+dataops/dlt/ingest_data.py
+```
 
-Contient uniquement les versions stables du projet.
+L'ingestion :
 
-Les membres ne doivent pas pousser directement sur `main`.
+1. charge le fichier CSV ;
+2. nettoie les noms de colonnes ;
+3. initialise le pipeline dlt ;
+4. crée la destination DuckDB ;
+5. charge les données dans la table :
 
-### `develop`
+```text
+raw_data.students_raw
+```
 
-Branche principale de développement.
 
-Les fonctionnalités terminées sont intégrées dans `develop` après Pull Request et vérification.
+# 🗄️ 2. Stockage — DuckDB
 
-### `feature/*`
+DuckDB est utilisé comme base de données analytique locale.
 
-Chaque membre développe principalement sur sa branche dédiée.
+La base est située dans :
+
+```text
+data/duckdb/university.duckdb
+```
+
+La table brute principale est :
+
+```text
+raw_data.students_raw
+```
+
+DuckDB permet de conserver une séparation claire entre :
+
+```text
+RAW DATA
+   ↓
+TRANSFORMED DATA
+   ↓
+PREPARED DATA
+```
+
+
+
+# 🔄 3. Transformation — dbt
+
+Après l'ingestion, les données sont transformées avec **dbt**.
+
+Le projet dbt se trouve dans :
+
+```text
+dataops/dbt/university_dropout_dbt/
+```
+
+Les principaux modèles sont :
+
+```text
+stg_students
+prepared_students
+```
+
+Pipeline :
+
+```text
+students_raw
+     │
+     ▼
+stg_students
+     │
+     ▼
+prepared_students
+```
+
+Les transformations permettent notamment de préparer les données pour les étapes de Data Quality et de Machine Learning.
+
+## Tests dbt
+
+Les tests dbt ont été exécutés avec succès :
+
+```text
+9 / 9 tests réussis ✅
+```
+
+
+# 🧹 4. Data Quality
+
+La qualité des données est vérifiée avant leur utilisation par le Machine Learning.
+
+Le dossier concerné est :
+
+```text
+data_quality/
+```
+
+Il contient notamment :
+
+```text
+data_quality/
+├── data_contract.yaml
+├── quality_checks.py
+├── check_business_rule.py
+├── lineage.md
+└── README.md
+```
+
+## Contrôles réalisés
+
+Les contrôles couvrent notamment :
+
+* complétude ;
+* valeurs NULL ;
+* types de données ;
+* valeurs catégorielles autorisées ;
+* plages numériques ;
+* unicité ;
+* doublons exacts ;
+* doublons métier ;
+* identifiants techniques ;
+* règles métier.
+
+Le système produit un statut global :
+
+```text
+PASS
+PASS_WITH_WARNINGS
+FAIL
+```
+
+
+# 📋 5. Data Contract
+
+Les contraintes attendues sur les données sont définies dans :
+
+```text
+data_quality/data_contract.yaml
+```
+
+Le Data Contract permet de formaliser :
+
+* les colonnes obligatoires ;
+* les types attendus ;
+* les valeurs autorisées ;
+* les règles de qualité ;
+* les contraintes d'unicité ;
+* les règles sur le volume des données.
+
+Ainsi, le pipeline peut vérifier automatiquement que les données respectent le contrat défini.
+
+
+# 🔗 6. Data Lineage
+
+Le Data Lineage permet de suivre le cheminement des données à travers les différentes étapes du pipeline.
+
+La documentation se trouve dans :
+
+```text
+data_quality/lineage.md
+```
+
+Vue simplifiée :
+
+```text
+xAPI-Edu-Data.csv
+        │
+        ▼
+students_raw
+        │
+        ▼
+stg_students
+        │
+        ▼
+prepared_students
+        │
+        ▼
+Dataset ML
+        │
+        ▼
+Modèle
+```
+
+
+# ⚙️ 7. Orchestration — Dagster
+
+Dagster est utilisé pour orchestrer le pipeline complet.
+
+Contrairement à la version initiale du projet, Dagster ne se limite plus au pipeline DataOps.
+
+Il orchestre également :
+
+* la préparation ML ;
+* l'entraînement ;
+* l'évaluation ;
+* l'intégration MLflow ;
+* la promotion du modèle.
+
+Le pipeline complet est donc :
+
+```text
+RAW
+ ↓
+dlt
+ ↓
+DuckDB
+ ↓
+dbt
+ ↓
+Data Quality
+ ↓
+ML Dataset
+ ↓
+Training
+ ↓
+Evaluation
+ ↓
+MLflow
+ ↓
+Model Registry
+```
+
+Les fichiers principaux sont :
+
+```text
+dataops/dagster/
+├── assets.py
+├── assets_ml.py
+├── definitions.py
+├── jobs_schedules.py
+├── resources.py
+└── Dockerfile
+```
+
+## Schedule
+
+Un schedule quotidien est configuré :
+
+```text
+0 2 * * *
+```
+
+Le pipeline peut également être déclenché lorsqu'un nouveau fichier apparaît dans :
+
+```text
+data/raw/
+```
+
+Un sensor Dagster est utilisé pour détecter ces nouveaux fichiers.
+
+
+# 🤖 8. Machine Learning
+
+## Problème
+
+Le problème est formulé comme un problème de **classification multiclasses**.
+
+La cible est :
+
+```text
+Class
+```
+
+avec trois classes :
+
+```text
+L = Low Risk
+M = Medium Risk
+H = High Risk
+```
+
+
+# 🔬 9. Préprocessing
+
+Le preprocessing est réalisé dans :
+
+```text
+ml/preprocessing/preprocess.py
+```
+
+Les principales étapes sont :
+
+1. chargement des données préparées ;
+2. séparation des variables explicatives et de la cible ;
+3. suppression des variables pouvant provoquer une fuite de données ;
+4. encodage des variables catégorielles ;
+5. séparation Train / Validation / Test ;
+6. normalisation avec `StandardScaler` ;
+7. sauvegarde du scaler ;
+8. sauvegarde des noms de variables.
+
+## Séparation des données
+
+```text
+Train       → 70 % → 336 observations
+Validation  → 15 % → 72 observations
+Test        → 15 % → 72 observations
+```
+
+Le split utilise :
+
+```python
+random_state=42
+```
+
+et :
+
+```python
+stratify=y
+```
+
+afin de garantir la reproductibilité et de préserver la distribution des classes.
+
+
+# 🔐 Prévention de la fuite de données
+
+Une attention particulière a été portée à la **data leakage**.
+
+La variable :
+
+```text
+risk_class
+```
+
+est retirée des variables explicatives avant l'entraînement.
+
+Elle ne doit pas être utilisée comme feature puisqu'elle est directement liée à la variable cible.
+
+
+# 🧠 10. Modèles entraînés
+
+Trois modèles ont été comparés :
+
+```text
+Logistic Regression
+Random Forest
+XGBoost
+```
+
+Le meilleur modèle est sélectionné sur le jeu de **validation**.
+
+Le jeu de test est conservé séparément et utilisé uniquement pour l'évaluation finale.
+
+
+# 🏆 11. Résultats du Machine Learning
+
+## Comparaison sur Validation
+
+| Modèle              | Accuracy Validation |
+| ------------------- | ------------------: |
+| Logistic Regression |              0.6944 |
+| **Random Forest**   |          **0.8194** |
+| XGBoost             |              0.8056 |
+
+Le modèle retenu est donc :
+
+```text
+Random Forest
+```
+
+avec :
+
+```text
+Validation Accuracy = 0.8194
+```
+
+
+# 🧪 12. Évaluation finale
+
+Après sélection du modèle sur Validation, le modèle est évalué sur le jeu de **Test indépendant**.
+
+Résultats :
+
+| Métrique            | Résultat |
+| ------------------- | -------: |
+| Test Accuracy       | **0.76** |
+| Test F1-score Macro | **0.77** |
+
+Une matrice de confusion est également générée :
+
+```text
+ml/evaluation/confusion_matrix.png
+```
+
+L'évaluation complète est réalisée par :
+
+```text
+ml/evaluation/evaluate_model.py
+```
+
+
+# 📦 13. Versionnement du modèle
+
+Les artefacts du modèle sont stockés dans :
+
+```text
+ml/models/
+```
+
+On y trouve notamment :
+
+```text
+best_model.pkl
+scaler.pkl
+feature_names.pkl
+model_version.json
+```
+
+Le fichier :
+
+```text
+model_version.json
+```
+
+contient les informations de version du modèle.
 
 Exemple :
 
-```bash
-git checkout feature/yousra-ml
-
----
-
-# 🤝 Workflow de collaboration
-
-```markdown
-# 🤝 Workflow de collaboration
-
-## 1. Récupérer le projet
-
-```bash
-git clone https://github.com/fatimazahra2000/university-dropout-prediction.git
-cd university-dropout-prediction
-2. Récupérer les dernières modifications
-git checkout develop
-git pull origin develop
-3. Aller sur sa branche
-
-Exemple pour Yousra :
-
-git checkout feature/yousra-ml
-
-Exemple pour Doaa :
-
-git checkout feature/douaa-ingestion
-4. Développer
-
-Modifier ou ajouter les fichiers nécessaires.
-
-5. Vérifier les modifications
-git status
-6. Ajouter les fichiers
-git add .
-7. Créer un commit
-git commit -m "feat: ajout de la préparation des données ML"
-8. Envoyer vers GitHub
-git push origin feature/yousra-ml
-9. Créer une Pull Request
-
-La Pull Request doit être créée :
-
-feature/nom-membre
-        ↓
-     develop
-
-Après vérification, la Pull Request peut être fusionnée.
+```json
+{
+    "model_name": "Random Forest",
+    "model_version": "1.0.0",
+    "dataset": "xAPI-Edu-Data",
+    "target": "Class",
+    "training_date": "2026-08-19",
+    "selection_metric": "validation_accuracy",
+    "validation_accuracy": 0.8194,
+    "test_accuracy": 0.76,
+    "test_f1_macro": 0.77,
+    "status": "validated"
+}
+```
 
 
----
+# 📊 14. MLflow — Experiment Tracking
 
-# 🔀 Pull Requests
+MLflow est utilisé pour assurer la traçabilité des expérimentations.
 
-```markdown
-# 🔀 Pull Requests
+Il permet d'enregistrer :
 
-Toute fonctionnalité terminée doit passer par une Pull Request.
+* les paramètres ;
+* les métriques ;
+* les artefacts ;
+* les modèles ;
+* les runs ;
+* les informations de version.
 
-Workflow :
+Le script historique de logging est :
 
 ```text
-Feature Branch
-      │
-      ▼
-Pull Request
-      │
-      ▼
-Review
-      │
-      ▼
-Tests CI/CD
-      │
-      ▼
-develop
-      │
-      ▼
-Version stable
-      │
-      ▼
+mlflow/log_to_mlflow.py
+```
+
+L'intégration Dagster → MLflow est également réalisée directement dans :
+
+```text
+dataops/dagster/assets_ml.py
+```
+
+
+# 📦 15. MLflow Model Registry
+
+Le modèle validé est enregistré dans le Model Registry sous le nom :
+
+```text
+dropout-predictor
+```
+
+Le pipeline Dagster applique également un seuil de qualité sur l'accuracy de test.
+
+Par défaut :
+
+```text
+MODEL_ACCURACY_THRESHOLD = 0.75
+```
+
+Le modèle est promu lorsque :
+
+```text
+test_accuracy >= threshold
+```
+
+Dans notre cas :
+
+```text
+0.76 >= 0.75
+```
+
+Le modèle satisfait donc le seuil de validation.
+
+
+# 🔁 16. Pipeline MLflow avec Dagster
+
+Le flux MLOps est :
+
+```text
+prepared_students
+       │
+       ▼
+Préprocessing
+       │
+       ▼
+Train / Validation / Test
+       │
+       ▼
+Entraînement
+       │
+       ├── Logistic Regression
+       ├── Random Forest
+       └── XGBoost
+       │
+       ▼
+Sélection du meilleur modèle
+       │
+       ▼
+Random Forest
+       │
+       ▼
+Évaluation Test
+       │
+       ▼
+MLflow Tracking
+       │
+       ▼
+Quality Threshold
+       │
+       ▼
+Model Registry
+       │
+       ▼
+dropout-predictor
+```
+
+
+# 🚀 17. API REST — FastAPI
+
+Le modèle est exposé sous forme d'une API REST avec **FastAPI**.
+
+Le code se trouve dans :
+
+```text
+api/
+├── main.py
+├── routes.py
+├── schemas.py
+└── README.md
+```
+
+
+## Endpoint `/health`
+
+Méthode :
+
+```http
+GET /health
+```
+
+Rôle :
+
+```text
+Vérifier que l'API est disponible.
+```
+
+Réponse :
+
+```json
+{
+  "status": "ok"
+}
+```
+
+
+## Endpoint `/predict`
+
+Méthode :
+
+```http
+POST /predict
+```
+
+Rôle :
+
+```text
+Prédire le niveau de risque d'un étudiant.
+```
+
+Le système reçoit les caractéristiques d'un étudiant et retourne :
+
+```json
+{
+  "prediction": "L",
+  "risk_label": "Low Risk"
+}
+```
+
+Les trois résultats possibles sont :
+
+```text
+L → Low Risk
+M → Medium Risk
+H → High Risk
+```
+
+
+# 🔧 18. Préparation des données dans l'API
+
+L'API utilise les mêmes éléments de preprocessing que le modèle.
+
+Elle recharge :
+
+```text
+best_model.pkl
+scaler.pkl
+feature_names.pkl
+```
+
+Le même `StandardScaler` utilisé lors de l'entraînement est réutilisé au moment de l'inférence.
+
+Cela garantit que les nouvelles données sont transformées de la même manière que les données d'entraînement.
+
+
+# 🐛 19. Incident de reproductibilité corrigé
+
+Un problème important a été identifié pendant la phase de monitoring.
+
+Initialement, le `StandardScaler` utilisé pendant l'entraînement n'était pas correctement sauvegardé/réutilisé.
+
+Lorsqu'une nouvelle donnée était envoyée au modèle, l'accuracy observée pouvait chuter jusqu'à :
+
+```text
+0.29
+```
+
+Après correction :
+
+```text
+scaler.pkl
+```
+
+est sauvegardé pendant le preprocessing puis réutilisé systématiquement :
+
+```text
+Training
+   │
+   ▼
+StandardScaler
+   │
+   └──→ scaler.pkl
+             │
+             ▼
+        API /predict
+             │
+             ▼
+       scaler.transform()
+             │
+             ▼
+          Model
+```
+
+Après correction, l'accuracy mesurée est remontée à environ :
+
+```text
+0.7639
+```
+
+ce qui est cohérent avec l'accuracy obtenue sur le jeu de test.
+
+Cette correction améliore fortement la **reproductibilité entre entraînement et inférence**.
+
+
+# 🐳 20. Docker
+
+Le projet est entièrement conteneurisé avec Docker.
+
+Les services principaux sont :
+
+```text
+API
+MLflow
+Dagster Webserver
+Dagster Daemon
+```
+
+Le fichier principal est :
+
+```text
+docker-compose.yml
+```
+
+Architecture :
+
+```text
+Docker Compose
+│
+├── api
+│
+├── mlflow
+│
+├── dagster-webserver
+│
+└── dagster-daemon
+```
+
+
+# 🌐 21. Ports locaux
+
+## API
+
+```text
+http://localhost:3501
+```
+
+Swagger :
+
+```text
+http://localhost:3501/docs
+```
+
+## Dagster
+
+```text
+http://localhost:3502
+```
+
+## MLflow
+
+Le serveur MLflow utilise le port interne :
+
+```text
+5000
+```
+
+
+# ⚙️ 22. CI/CD — GitHub Actions
+
+Deux workflows GitHub Actions sont présents.
+
+```text
+.github/workflows/
+├── ci.yml
+└── service-monitoring.yml
+```
+
+
+## Workflow CI
+
+Le workflow :
+
+```text
+ci.yml
+```
+
+est déclenché lors des :
+
+* push ;
+* Pull Requests.
+
+Il réalise notamment :
+
+```text
+Checkout
+   ↓
+Installation Python
+   ↓
+Installation dépendances
+   ↓
+Tests pytest
+   ↓
+Build Docker
+   ↓
+Lancement du conteneur
+   ↓
+Test /health
+```
+
+Le build Docker de l'API est donc également vérifié automatiquement.
+
+
+# ❤️ 23. Monitoring du service
+
+Le fichier :
+
+```text
+monitoring/api_health_monitor.py
+```
+
+permet de surveiller la santé de l'API.
+
+Il mesure notamment :
+
+* disponibilité ;
+* code HTTP ;
+* temps de réponse ;
+* erreurs.
+
+Les métriques sont enregistrées dans :
+
+```text
+monitoring/service_metrics.csv
+```
+
+
+# 📈 24. Monitoring du modèle
+
+Le monitoring ML se trouve notamment dans :
+
+```text
+monitoring/model_monitor.py
+```
+
+Il permet de suivre :
+
+* accuracy ;
+* F1-score ;
+* évolution des performances ;
+* drift des données.
+
+Les métriques sont également envoyées vers MLflow.
+
+Le dashboard généré est disponible dans :
+
+```text
+monitoring/dashboard.png
+```
+
+
+# 📊 25. Monitoring du service
+
+Le projet contient également :
+
+```text
+monitoring/service_monitor.py
+monitoring/service_dashboard.py
+monitoring/api_health_monitor.py
+```
+
+Les éléments suivis comprennent :
+
+```text
+Disponibilité
+Temps de réponse
+Erreurs
+État du service
+```
+
+Un dashboard est disponible dans :
+
+```text
+monitoring/service_dashboard.png
+```
+
+---
+
+# ☁️ 26. Déploiement Cloud — Komodo
+
+Le déploiement Cloud est réalisé avec **Komodo**.
+
+Le déploiement utilise :
+
+```text
+Git Repository
+       │
+       ▼
+   docker-compose.yml
+       │
+       ▼
+     Komodo
+       │
+       ▼
+Docker Build
+       │
+       ▼
+Services Cloud
+```
+
+Les services déployés sont :
+
+```text
+API FastAPI
+MLflow
+Dagster Webserver
+Dagster Daemon
+```
+
+Le déploiement est volontairement **manuel**, conformément à la consigne pédagogique.
+
+Il n'y a pas de déploiement automatique à chaque push.
+
+
+# 🚀 27. Déploiement Cloud validé
+
+Le premier déploiement manuel a été réalisé avec succès.
+
+Les quatre services sont opérationnels :
+
+```text
+api
+mlflow
+dagster-webserver
+dagster-daemon
+```
+
+L'API a été vérifiée avec :
+
+```http
+GET /health
+```
+
+et retourne :
+
+```json
+{
+  "status": "ok"
+}
+```
+
+L'accès externe validé utilise :
+
+```text
+http://exp.s3.fsbm.ma:3501
+```
+
+
+# ⚠️ 28. Monitoring automatisé — précision importante
+
+Le script de monitoring fonctionne et a été validé.
+
+Cependant, l'automatisation complète du workflow GitHub Actions de monitoring dépend de la présence du workflow sur la **branche par défaut `main`**.
+
+Le workflow :
+
+```text
+service-monitoring.yml
+```
+
+est actuellement présent dans la branche de développement.
+
+Par conséquent :
+
+```text
+Monitoring script
+       │
+       ▼
+       ✅ Fonctionnel
+```
+
+mais :
+
+```text
+GitHub Actions Scheduled Monitoring
+       │
+       ▼
+       ⚠️ Dépend de la fusion/présence sur main
+```
+
+Cette situation ne remet pas en cause le fonctionnement du monitoring lui-même.
+
+
+
+# 📋 29. Gestion Agile — Scrum
+
+Le projet a été organisé selon une méthodologie **Agile Scrum**.
+
+La gestion des tâches a été réalisée avec :
+
+```text
+Jira
+```
+
+Le projet a été organisé en **3 sprints**.
+
+
+
+# 🏃 Sprint 1 — DataOps & Data Quality
+
+## Objectif
+
+Construire la base du pipeline de données.
+
+### Travaux réalisés
+
+* dlt ;
+* DuckDB ;
+* dbt ;
+* transformation des données ;
+* Data Quality ;
+* Data Contract ;
+* Data Lineage ;
+* orchestration Dagster de la partie DataOps.
+
+### Résultat
+
+```text
+Sprint 1 → ✅ Terminé
+```
+
+
+
+# 🏃 Sprint 2 — Machine Learning & MLOps
+
+## Objectif
+
+Construire et industrialiser la partie Machine Learning.
+
+### Travaux réalisés
+
+* préparation des données ;
+* Feature Engineering ;
+* Train / Validation / Test ;
+* entraînement ;
+* comparaison des modèles ;
+* sélection du meilleur modèle ;
+* évaluation ;
+* sauvegarde du modèle ;
+* MLflow Tracking ;
+* Model Registry ;
+* versionnement ;
+* monitoring ML.
+
+### Résultat
+
+```text
+Sprint 2 → ✅ Terminé
+```
+
+
+# 🏃 Sprint 3 — Déploiement & Industrialisation
+
+## Objectif
+
+Transformer le modèle en service exploitable.
+
+### Travaux réalisés
+
+* FastAPI ;
+* `/predict` ;
+* `/health` ;
+* Docker ;
+* Docker Compose ;
+* GitHub Actions ;
+* tests automatisés ;
+* monitoring API ;
+* déploiement Cloud ;
+* validation de l'environnement Cloud.
+
+### Résultat
+
+```text
+Sprint 3 → ✅ Terminé
+```
+
+
+# 📊 30. Avancement global
+
+| Sprint            | Domaine                         | État           |
+| ----------------- | ------------------------------- | -------------- |
+| Sprint 1          | DataOps & Data Quality          | 🟢 100 %       |
+| Sprint 2          | ML & MLOps                      | 🟢 100 %       |
+| Sprint 3          | Déploiement & Industrialisation | 🟢 100 %       |
+| **Projet global** | **Data → Production**           | **🟢 Terminé** |
+
+
+
+# 👥 31. Équipe
+
+| Membre       | Responsabilité principale                                     |
+| ------------ | ------------------------------------------------------------- |
+| **Hajar**    | Product Owner, vision du projet, orchestration Dagster        |
+| **Fatima**   | Scrum Master, GitHub, README, support ML & Data Quality       |
+| **Doaa**     | Data Engineer — dlt + DuckDB                                  |
+| **Yousra**   | Analytics/ML Engineer — dbt + contrôle qualité |
+| **Hasnaa**   | Data/ML Engineer — Machine Learning                           |
+| **Wijdane**  | MLOps Engineer — MLflow + Monitoring ML                       |
+| **Hiba**     | Deployment Engineer — FastAPI + Docker                        |
+| **Soukaina** | DevOps Engineer — CI/CD + Monitoring Service + Cloud          |
+
+
+
+# 🌿 32. Organisation Git
+
+Le projet utilise une organisation Git basée sur :
+
+```text
 main
+ │
+ └── develop
+      │
+      ├── feature/hajar-orchestration
+      ├── feature/douaa-ingestion
+      ├── feature/hasnaa-ml
+      ├── feature/yousra-data
+      ├── feature/wijdane-mlflow
+      ├── deploiement-hiba
+      ├── feature/soukaiana-cicd
+      ├──feature/fatima-data-quality
+      └── feature/fatima-agile-ml
+```
 
-Les Pull Requests permettent :
+## `main`
 
-de vérifier le code ;
-d'éviter les conflits ;
-de vérifier les tests ;
-de conserver un historique Git propre ;
-de contrôler les modifications avant intégration.
+Contient les versions stables.
 
----
+Aucun développement direct n'est réalisé sur cette branche.
 
-```markdown
-# 📋 Livrables
+## `develop`
 
-## Livrable 1 — Vision du projet
+Branche principale d'intégration.
 
-- Problématique
-- Objectifs
-- Utilisateurs cibles
-- Valeur métier
-- Data Strategy
+Les fonctionnalités sont fusionnées après Pull Request et vérification.
 
-**Responsable : Hajar**
+## `feature/*`
 
----
+Branches dédiées au développement de fonctionnalités.
 
-## Livrable 2 — Gestion Agile
 
-- Product Backlog
-- User Stories
-- Sprint Planning
-- Sprint Review
-- Sprint Retrospective
-- Minimum 3 sprints
 
-**Responsable : Fatima**
+# 🔀 33. Workflow Git
 
-**Outil : Jira**
+Le workflow standard est :
 
----
+```text
+develop
+   │
+   ▼
+Créer / mettre à jour sa branche feature
+   │
+   ▼
+Développement
+   │
+   ▼
+Tests
+   │
+   ▼
+Commit
+   │
+   ▼
+Push
+   │
+   ▼
+Pull Request
+   │
+   ▼
+Code Review
+   │
+   ▼
+GitHub Actions
+   │
+   ▼
+develop
+   │
+   ▼
+main
+```
 
-## Livrable 3 — Pipeline DataOps
+Commandes principales :
 
-- dlt
-- DuckDB
-- dbt
-- Dagster
+```bash
+git checkout develop
+git pull origin develop
 
-**Responsables :**
+git checkout feature/ma-feature
 
-- dlt + DuckDB → Doaa
-- dbt + qualité → Hasnaa
-- Dagster → Hajar
+git status
 
----
+git add .
 
-## Livrable 4 — Qualité des données
+git commit -m "feat: description de la fonctionnalité"
 
-- Tests de qualité
-- Data Contracts
-- Data Lineage
-- Documentation des données
+git push origin feature/ma-feature
+```
 
-**Responsable : Hasnaa**
+Puis création d'une Pull Request :
 
----
+```text
+feature/ma-feature
+        ↓
+     develop
+```
 
-## Livrable 5 — Machine Learning
 
-- Préparation des données
-- Feature Engineering
-- Entraînement
-- Évaluation
-- Sauvegarde du modèle
-
-**Responsable : Yousra**
-
-**Support : Fatima**
-
----
-
-## Livrable 6 — MLOps
-
-- Experiment Tracking
-- Paramètres
-- Métriques
-- Artefacts
-- Model Registry
-- Versionnement
-- Monitoring ML
-
-**Responsable : Wijdane**
-
----
-
-## Livrable 7 — Déploiement
-
-- FastAPI
-- `POST /predict`
-- `GET /health`
-- Docker
-- Déploiement Cloud
-
-**Responsable : Hiba**
-
----
-
-## Livrable 8 — CI/CD
-
-- GitHub Actions
-- Tests automatiques
-- Vérification du code
-- Build Docker
-
-**Responsable : Soukaina**
-
----
-
-## Livrable 9 — Monitoring
-
-- Disponibilité du service
-- Temps de réponse
-- Métriques ML
-- Dérive simple
-
-**Responsables :**
-
-- Monitoring ML → Wijdane
-- Monitoring service → Soukaina
-
----
-
-## Livrable 10 — Documentation
-
-- README
-- Architecture
-- Guide d'installation
-- Guide d'utilisation
-- Documentation Git/GitHub
-
-**Responsable : Fatima**
-
-# 📁 Structure du projet
+# 📁 34. Structure finale du projet
 
 ```text
 university-dropout-prediction/
 │
 ├── .github/
 │   └── workflows/
-│       └── ci.yml
+│       ├── ci.yml
+│       └── service-monitoring.yml
 │
 ├── api/
-│   └── ...
+│   ├── main.py
+│   ├── routes.py
+│   ├── schemas.py
+│   └── README.md
 │
 ├── data/
-│   └── ...
+│   ├── raw/
+│   │   └── xAPI-Edu-Data.csv
+│   │
+│   ├── processed/
+│   │   ├── train_data.csv
+│   │   ├── val_data.csv
+│   │   └── test_data.csv
+│   │
+│   └── duckdb/
+│       └── university.duckdb
 │
 ├── data_quality/
-│   └── ...
+│   ├── data_contract.yaml
+│   ├── quality_checks.py
+│   ├── check_business_rule.py
+│   ├── lineage.md
+│   └── README.md
 │
 ├── dataops/
-│   └── ...
+│   │
+│   ├── dlt/
+│   │   ├── ingest_data.py
+│   │   ├── check_db.py
+│   │   └── README.md
+│   │
+│   ├── dbt/
+│   │   ├── profiles.yml
+│   │   ├── README.md
+│   │   └── university_dropout_dbt/
+│   │       ├── dbt_project.yml
+│   │       ├── models/
+│   │       │   ├── stg_students.sql
+│   │       │   ├── prepared_students.sql
+│   │       │   ├── schema.yml
+│   │       │   └── sources.yml
+│   │       └── ...
+│   │
+│   └── dagster/
+│       ├── assets.py
+│       ├── assets_ml.py
+│       ├── definitions.py
+│       ├── jobs_schedules.py
+│       ├── resources.py
+│       ├── Dockerfile
+│       └── README.md
 │
 ├── deployment/
-│   └── ...
+│   ├── Dockerfile
+│   ├── docker-compose.yml
+│   └── README.md
 │
 ├── docs/
 │   ├── agile/
-│   ├── architecture/
-│   └── rapport/
+│   │   ├── backlog_Jira.csv
+│   │   ├── user_stories.md
+│   │   ├── sprint1.md
+│   │   ├── sprint1_review.md
+│   │   ├── sprint1_retrospective.md
+│   │   ├── sprint2.md
+│   │   ├── sprint2_review.md
+│   │   ├── sprint2_retrospective.md
+│   │   ├── sprint3.md
+│   │   ├── sprint3_review.md
+│   │   └── sprint3_retrospective.md
+│   │
+│   └── architecture/
+│       └── deploiement_cloud.md
 │
 ├── ml/
-│   └── ...
+│   ├── preprocessing/
+│   │   └── preprocess.py
+│   │
+│   ├── training/
+│   │   └── train_model.py
+│   │
+│   ├── evaluation/
+│   │   ├── evaluate_model.py
+│   │   └── confusion_matrix.png
+│   │
+│   ├── models/
+│   │   ├── best_model.pkl
+│   │   ├── scaler.pkl
+│   │   ├── feature_names.pkl
+│   │   └── model_version.json
+│   │
+│   ├── notebooks/
+│   │   └── EDA_Visualisation.ipynb
+│   │
+│   └── README.md
 │
 ├── mlflow/
-│   └── ...
+│   ├── log_to_mlflow.py
+│   ├── Dockerfile
+│   └── README.md
 │
 ├── monitoring/
-│   └── ...
+│   ├── model_monitor.py
+│   ├── service_monitor.py
+│   ├── api_health_monitor.py
+│   ├── service_dashboard.py
+│   ├── dashboard.png
+│   ├── service_dashboard.png
+│   ├── service_metrics.csv
+│   └── README.md
 │
 ├── tests/
-│   └── ...
+│   └── test_api.py
 │
 ├── .env.example
 ├── .gitignore
-├── README.md
-└── requirements.txt
+├── docker-compose.yml
+├── requirements.txt
+├── requirements-api.txt
+├── run_pipeline.py
+└── README.md
+```
 
-# 📥 DataOps
 
-```markdown
-# 📥 Pipeline DataOps
+# ▶️ 35. Installation
 
-Le pipeline DataOps prévu est :
+## Prérequis
+
+Installer :
+
+* Python 3.11 ;
+* Docker ;
+* Docker Compose ;
+* Git.
+
+
+## Cloner le projet
+
+```bash
+git clone https://github.com/fatimazahra2000/university-dropout-prediction.git
+
+cd university-dropout-prediction
+```
+
+
+## Créer l'environnement Python
+
+```bash
+python -m venv venv
+```
+
+### Windows
+
+```bash
+venv\Scripts\activate
+```
+
+### Linux / macOS
+
+```bash
+source venv/bin/activate
+```
+
+
+## Installer les dépendances
+
+```bash
+pip install -r requirements.txt
+```
+
+
+# 📥 36. Exécuter le pipeline DataOps
+
+Le dataset doit être placé dans :
 
 ```text
-xAPI-Edu-Data
-      │
-      ▼
-     dlt
-      │
-      ▼
-   DuckDB
-      │
-      ▼
-     dbt
-      │
-      ▼
-Data Quality
-      │
-      ▼
-   Dagster
+data/raw/xAPI-Edu-Data.csv
+```
+
+Puis :
+
+```bash
+python run_pipeline.py
+```
+
+Le pipeline exécute :
+
+```text
 dlt
-
-Responsable : Doaa
-
-Objectifs :
-
-récupérer les données ;
-automatiser l'ingestion ;
-gérer le chargement ;
-gérer les erreurs d'ingestion.
+ ↓
 DuckDB
-
-Responsable : Doaa
-
-Objectifs :
-
-stocker les données brutes ;
-permettre leur consultation ;
-fournir les données à l'étape de transformation.
+ ↓
 dbt
+ ↓
+Data Quality
+```
 
-Responsable : Hasna
 
-Objectifs :
+# ⚙️ 37. Lancer Dagster
 
-transformer les données ;
-créer les modèles analytiques ;
-documenter les transformations ;
-effectuer des tests.
-Dagster
+Depuis la racine du projet :
 
-Responsable : Hajar
+```bash
+dagster dev -f dataops/dagster/definitions.py
+```
 
-Objectifs :
-
-orchestrer le pipeline ;
-organiser les différentes étapes ;
-gérer les dépendances ;
-suivre l'exécution du pipeline.
-
----
-
-# 🧹 Qualité des données
-
-```markdown
-# 🧹 Qualité des données
-
-Responsable : **Hasnaa**
-
-Les contrôles prévus portent notamment sur :
-
-- Complétude
-- Validité
-- Cohérence
-- Intégrité
-- Unicité
-- Types de données
-- Valeurs autorisées
-
-Le projet intégrera également :
-
-- Data Contracts
-- Data Lineage
-- Métadonnées
-- Tests automatisés
-🤖 Machine Learning
-# 🤖 Machine Learning
-
-Responsable : **Yousra**
-
-Le problème est formulé comme un problème de :
-
-**Classification du risque de décrochage universitaire.**
-
-Les étapes prévues sont :
-
-1. Analyse exploratoire des données
-2. Nettoyage
-3. Préparation
-4. Feature Engineering
-5. Séparation Train/Test
-6. Entraînement
-7. Comparaison des modèles
-8. Évaluation
-9. Sélection du meilleur modèle
-10. Sauvegarde du modèle
-
-Les métriques seront définies selon le problème et les modèles retenus.
-
-### Support ML
-
-Fatima apporte un support principalement sur :
-
-- tests ;
-- documentation ;
-- vérification du fonctionnement ;
-- organisation du code ML.
-📊 MLflow
-# 📊 MLflow
-
-Responsable : **Wijdane**
-
-MLflow sera utilisé pour :
-
-- suivre les expériences ;
-- enregistrer les paramètres ;
-- enregistrer les métriques ;
-- sauvegarder les artefacts ;
-- enregistrer les modèles ;
-- gérer le Model Registry ;
-- assurer le versionnement des modèles.
-🚀 API et Docker
-# 🚀 Déploiement
-
-Responsable : **Hiba**
-
-Le modèle sera exposé via une API REST avec FastAPI.
-
-Endpoints prévus :
+Interface :
 
 ```text
-POST /predict
-GET /health
+http://localhost:3000
+```
 
-L'application sera ensuite conteneurisée avec Docker.
+Dagster permet de visualiser les assets, les exécutions et les dépendances du pipeline.
 
-Le déploiement final sera réalisé dans un environnement Cloud.
 
+# 📊 38. Lancer MLflow
+
+```bash
+mlflow ui
+```
+
+Puis :
+
+```bash
+python mlflow/log_to_mlflow.py
+```
+
+L'interface MLflow est accessible selon la configuration du serveur.
+
+Avec Docker Compose, MLflow utilise le service :
+
+```text
+mlflow:5000
+```
+
+
+# 🚀 39. Lancer l'API localement
+
+```bash
+cd api
+
+uvicorn main:app --reload --port 8000
+```
+
+L'API est alors accessible sur :
+
+```text
+http://localhost:8000
+```
+
+Swagger :
+
+```text
+http://localhost:8000/docs
+```
+
+
+# 🐳 40. Lancer avec Docker Compose
+
+Depuis la racine :
+
+```bash
+docker compose up --build
+```
+
+Ou avec le fichier de déploiement :
+
+```bash
+docker compose -f deployment/docker-compose.yml up --build
+```
+
+L'API est exposée sur :
+
+```text
+http://localhost:3501
+```
+
+Swagger :
+
+```text
+http://localhost:3501/docs
+```
+
+
+# 🧪 41. Exécuter les tests
+
+Les tests sont situés dans :
+
+```text
+tests/
+```
+
+Lancer :
+
+```bash
+pytest tests/ -v
+```
+
+Les tests vérifient notamment le fonctionnement de l'API et des endpoints :
+
+```text
+/health
+/predict
+```
 
 ---
 
-# ⚙️ CI/CD et Cloud
+# 📈 42. Lancer le monitoring
 
-```markdown
-# ⚙️ CI/CD & Cloud
+## Monitoring du modèle
 
-Responsable : **Soukaina**
-
-GitHub Actions sera utilisé pour automatiser :
-
-1. Vérification du code
-2. Installation des dépendances
-3. Exécution des tests
-4. Build de l'image Docker
-5. Vérification de l'image
-6. Préparation du déploiement
-
-Le projet prévoit également un déploiement Cloud et un monitoring du service.
-
-L'environnement Cloud sera précisé au cours du projet.
-📈 Monitoring
-# 📈 Monitoring
-
-Le monitoring couvrira deux dimensions.
-
-## Monitoring ML
-
-Responsable : **Wijdane**
-
-Suivi :
-
-- performances du modèle ;
-- métriques ML ;
-- évolution des performances ;
-- dérive simple.
+```bash
+python monitoring/model_monitor.py
+```
 
 ## Monitoring du service
 
-Responsable : **Soukaina**
+```bash
+python monitoring/service_monitor.py
+```
 
-Suivi :
+## Vérification de santé de l'API
 
-- disponibilité ;
-- temps de réponse ;
-- erreurs du service ;
-- état du déploiement.
+```bash
+python monitoring/api_health_monitor.py
+```
 
+## Dashboard du service
 
-# 📚 Documentation
-
-La documentation du projet sera organisée dans `docs/`.
-
-```text
-docs/
-│
-├── agile/
-│   ├── product_backlog.md
-│   ├── user_stories.md
-│   ├── sprint_1.md
-│   ├── sprint_2.md
-│   ├── sprint_3.md
-│   ├── sprint_reviews.md
-│   └── sprint_retrospectives.md
-│
-├── architecture/
-│   ├── architecture.md
-│   ├── data_lineage.md
-│   └── data_strategy.md
-│
-└── rapport/
-    └── ...
+```bash
+python monitoring/service_dashboard.py
+```
 
 ---
 
-# 📌 État d'avancement
+# 🔐 43. Variables d'environnement
 
-```markdown
-# 📌 État d'avancement
-
-| Composant | Responsable | État |
-|---|---|---|
-| Vision du projet | Hajar | 🟡 En préparation |
-| Product Backlog | Fatima + Hajar | 🟢 Initialisé |
-| GitHub | Fatima | 🟢 Initialisé |
-| dlt | Doaa | 🟡 En préparation |
-| DuckDB | Doaa | ⚪ À réaliser |
-| dbt | Hasnaa | ⚪ À réaliser |
-| Data Quality | Hasnaa | ⚪ À réaliser |
-| Data Contracts | Hasnaa | ⚪ À réaliser |
-| Data Lineage | Hasnaa | ⚪ À réaliser |
-| Dagster | Hajar | ⚪ À réaliser |
-| Machine Learning | Yousra | ⚪ À réaliser |
-| MLflow | Wijdane | ⚪ À réaliser |
-| Monitoring ML | Wijdane | ⚪ À réaliser |
-| FastAPI | Hiba | ⚪ À réaliser |
-| Docker | Hiba | ⚪ À réaliser |
-| GitHub Actions | Soukaina | ⚪ À réaliser |
-| Monitoring Service | Soukaina | ⚪ À réaliser |
-| Cloud | Soukaina | ⚪ À réaliser |
-
-
-🔐 Variables d'environnement
-
-# 🔐 Variables d'environnement
-
-Les variables sensibles ne doivent jamais être publiées sur GitHub.
+Les variables sensibles ne doivent pas être stockées dans Git.
 
 Le fichier :
 
 ```text
 .env
+```
 
 est ignoré par Git.
 
-Un fichier :
+Un modèle est fourni dans :
 
+```text
 .env.example
-
-contient uniquement les noms des variables nécessaires, sans secrets réels.
+```
 
 Exemple :
 
+```text
 DATA_DIR=data
 DUCKDB_PATH=data/university_dropout.duckdb
 
@@ -760,158 +1877,265 @@ MLFLOW_TRACKING_URI=http://localhost:5001
 API_HOST=0.0.0.0
 API_PORT=8000
 
-CLOUD_ENVIRONMENT=
+CLOUD_ENVIRONMENT=komodo
+```
 
-Les valeurs réelles seront définies lorsque les différents composants seront implémentés.
-
-
----
-
-# 🧪 Tests
-
-```markdown
-# 🧪 Tests
-
-Les tests seront regroupés dans :
+En environnement Docker, MLflow est accessible via :
 
 ```text
-tests/
+http://mlflow:5000
+```
 
-Ils couvriront progressivement :
-
-ingestion ;
-transformation ;
-qualité des données ;
-préparation ML ;
-modèle ;
-API ;
-endpoints /predict et /health ;
-intégration Docker.
-
-Les tests seront exécutés automatiquement par GitHub Actions.
+car les conteneurs communiquent via le réseau Docker Compose.
 
 
----
+# 📚 44. Documentation du projet
 
-# 📋 Gestion Agile
+La documentation est organisée dans :
 
-```markdown
-# 📋 Gestion Agile
+```text
+docs/
+```
 
-Le projet suit une organisation Agile basée sur Scrum.
+## Documentation Agile
 
-Les tâches sont gérées dans **Jira**.
+```text
+docs/agile/
+```
 
-Le projet comporte au minimum trois sprints :
+Contient :
 
-### Sprint 1 — DataOps & Qualité
+* Product Backlog ;
+* User Stories ;
+* Sprint 1 ;
+* Sprint 2 ;
+* Sprint 3 ;
+* Sprint Reviews ;
+* Sprint Retrospectives.
 
-- dlt
-- DuckDB
-- dbt
-- Data Quality
-- Data Contracts
-- préparation des données
-- orchestration Dagster
+## Documentation Architecture
 
-### Sprint 2 — Machine Learning & MLOps
+```text
+docs/architecture/
+```
 
-- Feature Engineering
-- entraînement
-- évaluation
-- sauvegarde
-- MLflow
-- Model Registry
-- monitoring ML
+Contient notamment la documentation du déploiement Cloud avec Komodo.
 
 
-### Sprint 3 — Déploiement & Industrialisation
+# 📌 45. Résumé de l'avancement
 
-- FastAPI
-- Docker
-- CI/CD
-- monitoring service
-- Cloud
-- validation finale
+```text
+                 PROJET UNIVERSITY DROPOUT PREDICTION
 
-📜 Statut du projet
-# 📜 Statut du projet
+                         ┌───────────────┐
+                         │   Dataset     │
+                         │ xAPI-Edu-Data │
+                         └───────┬───────┘
+                                 │
+                                 ▼
+                         ┌───────────────┐
+                         │    DataOps    │
+                         │               │
+                         │ dlt           │
+                         │ DuckDB        │
+                         │ dbt           │
+                         │ Data Quality  │
+                         │ Data Contract │
+                         │ Data Lineage  │
+                         └───────┬───────┘
+                                 │
+                              ✅ 100%
+                                 │
+                                 ▼
+                         ┌───────────────┐
+                         │      ML       │
+                         │               │
+                         │ Preprocessing │
+                         │ Training      │
+                         │ Evaluation    │
+                         │ Random Forest │
+                         └───────┬───────┘
+                                 │
+                              ✅ 100%
+                                 │
+                                 ▼
+                         ┌───────────────┐
+                         │    MLOps      │
+                         │               │
+                         │ MLflow        │
+                         │ Registry      │
+                         │ Versioning    │
+                         │ Monitoring    │
+                         └───────┬───────┘
+                                 │
+                              ✅ 100%
+                                 │
+                                 ▼
+                         ┌───────────────┐
+                         │ Deployment    │
+                         │               │
+                         │ FastAPI       │
+                         │ Docker        │
+                         │ CI/CD         │
+                         │ Komodo        │
+                         └───────┬───────┘
+                                 │
+                              ✅ 100%
+                                 │
+                                 ▼
+                         ┌───────────────┐
+                         │   Production  │
+                         │               │
+                         │ API            │
+                         │ Monitoring     │
+                         └───────────────┘
+                                 │
+                              ✅ VALIDÉ
+```
 
-🚧 **Projet en cours de développement**
 
-Le dépôt GitHub contient actuellement la structure initiale du projet et les dossiers correspondant aux différents composants.
+# 🏆 46. Bilan final
 
-Les prochaines étapes consistent notamment à :
+Le projet a permis de mettre en œuvre une chaîne complète de Machine Learning industrialisée.
 
-1. Finaliser la configuration Git/GitHub.
-2. Mettre en place le pipeline d'ingestion avec dlt.
-3. Configurer DuckDB.
-4. Mettre en place dbt.
-5. Ajouter les tests de qualité.
-6. Configurer Dagster.
-7. Préparer les données pour le Machine Learning.
-8. Développer et évaluer le modèle.
-9. Intégrer MLflow.
-10. Développer l'API FastAPI.
-11. Conteneuriser l'application.
-12. Mettre en place GitHub Actions.
-13. Déployer dans le Cloud.
-14. Mettre en place le monitoring.
+La solution finale couvre :
 
-🎓 Contexte académique
-# 🎓 Contexte académique
+```text
+Data Ingestion
+      ↓
+Data Storage
+      ↓
+Data Transformation
+      ↓
+Data Quality
+      ↓
+Data Contract
+      ↓
+Data Lineage
+      ↓
+Data Preparation
+      ↓
+Machine Learning
+      ↓
+Model Evaluation
+      ↓
+MLflow Tracking
+      ↓
+Model Registry
+      ↓
+FastAPI
+      ↓
+Docker
+      ↓
+CI/CD
+      ↓
+Cloud Deployment
+      ↓
+Monitoring
+```
 
-Projet réalisé dans le cadre du module :
+Le modèle final retenu est un :
 
-**MLOps & DataOps**
+```text
+Random Forest
+```
 
-Sujet :
+avec :
 
-**Prédiction de l'abandon universitaire**
+```text
+Validation Accuracy = 0.8194
+Test Accuracy       = 0.76
+Test F1 Macro       = 0.77
+```
 
-Dataset :
+Le modèle est versionné et validé, puis exposé à travers une API REST.
 
-**xAPI-Edu-Data — Kaggle**
+L'application a été conteneurisée avec Docker et déployée dans un environnement Cloud via Komodo.
 
-Le projet a pour objectif pédagogique de mettre en pratique les principes de :
 
-- DataOps
-- MLOps
-- Machine Learning
-- Qualité des données
-- Orchestration
-- CI/CD
-- Conteneurisation
-- Cloud
-- Collaboration Git/GitHub
-- Gestion Agile
-<<<<<<< HEAD
+# ⚠️ 47. Points de finalisation
 
-=======
- 📝 Bonnes pratiques
->>>>>>> 8ab946686695dd503e4ac42087b1ae4d10bf3adf
-# 📝 Bonnes pratiques
+Le cœur fonctionnel du projet est terminé.
 
-✔️ Toujours travailler sur sa branche.
+Deux opérations de finalisation restent identifiées côté infrastructure/repository :
 
-✔️ Faire des commits réguliers.
+1. configurer `API_URL` dans les variables GitHub Actions avec l'URL de production afin que le workflow de monitoring cible directement l'API Cloud ;
+2. finaliser le passage de la configuration Komodo de `develop` vers `main` après validation par l'équipe.
 
-✔️ Écrire un message de commit clair.
+Ces points concernent la finalisation de l'automatisation et de la configuration du dépôt, et non le développement du système principal.
 
-✔️ Tester son code avant de pousser.
 
-✔️ Ouvrir une Pull Request vers `develop`.
+# 📝 48. Bonnes pratiques suivies
 
-✔️ Attendre la validation avant fusion.
+✔️ Développement sur des branches dédiées.
 
-❌ Ne jamais travailler directement sur `main`.
+✔️ Aucun développement direct sur `main`.
 
-❌ Ne jamais supprimer le travail d'un autre membre.
+✔️ Commits réguliers et explicites.
 
-❌ Ne jamais modifier les fichiers hors de sa responsabilité sans concertation.
+✔️ Pull Requests avant intégration.
 
----
-📜 Licence
+✔️ Revue du code.
+
+✔️ Tests avant intégration.
+
+✔️ Séparation DataOps / Machine Learning.
+
+✔️ Prévention de la fuite de données.
+
+✔️ Reproductibilité avec `random_state=42`.
+
+✔️ Sauvegarde du scaler d'entraînement.
+
+✔️ Versionnement du modèle.
+
+✔️ Tracking des expériences avec MLflow.
+
+✔️ Validation avant promotion du modèle.
+
+✔️ Conteneurisation de l'application.
+
+✔️ Automatisation des tests avec GitHub Actions.
+
+
+# 🎓 49. Contexte académique
+
+**Module :**
+
+```text
+MLOps & DataOps
+```
+
+**Sujet :**
+
+```text
+Prédiction de l'abandon universitaire
+```
+
+**Dataset :**
+
+```text
+xAPI-Edu-Data — Kaggle
+```
+
+**Technologies principales :**
+
+```text
+Python
+dlt
+DuckDB
+dbt
+Dagster
+Scikit-Learn
+XGBoost
+MLflow
+FastAPI
+Docker
+GitHub Actions
+Komodo
+Jira
+```
+
 
 # 📜 Licence
 
