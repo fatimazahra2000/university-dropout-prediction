@@ -1,0 +1,8 @@
+university_dropout_dbt:
+  target: dev
+
+  outputs:
+    dev:
+      type: duckdb
+      path: data/duckdb/university.duckdb
+      threads: 4

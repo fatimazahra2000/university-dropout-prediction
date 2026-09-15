@@ -1,0 +1,5 @@
+-	la disponibilité des données ; 
+-	le bon fonctionnement de l'ingestion ; 
+-	la réussite des transformations ; 
+-	le passage des contrôles de qualité ; 
+-	l'exécution correcte du pipeline orchestré. 
