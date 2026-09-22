@@ -1570,7 +1570,7 @@ university-dropout-prediction/
 │   ├── docker-compose.yml
 │   └── README.md
 │
-├── docs/
+├── Livrables_RAPPORT/
 │   ├── agile/
 │   │   ├── backlog_Jira.csv
 │   │   ├── user_stories.md
@@ -1584,8 +1584,11 @@ university-dropout-prediction/
 │   │   ├── sprint3_review.md
 │   │   └── sprint3_retrospective.md
 │   │
-│   └── architecture/
-│       └── deploiement_cloud.md
+│   ├── architecture/
+│   │   └── deploiement_cloud.md
+│   │
+│   ├── RapportFinModule.pdf
+│   └── University_Dropout_Prediction.pptx
 │
 ├── ml/
 │   ├── preprocessing/
